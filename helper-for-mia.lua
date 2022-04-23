@@ -67,7 +67,7 @@ function main()
 		
 		for k, document in ipairs(documents) do 
 			for article, value in ipairs(document["content"]) do
-				local treenode_article = u8:decode(string.format(u8"Статья %s | %s", article, value["title"]))
+				local treenode_article = u8:decode(string.format(u8"Г‘ГІГ ГІГјГї %s | %s", article, value["title"]))
 				if string.len(treenode_article) > 80 then
 					treenode_article = string_pairs(treenode_article, 90)[1] .. " .."
 				end
@@ -75,7 +75,7 @@ function main()
 				document["content"][article]["treenode_article"] = u8(treenode_article)
 				
 				for part, lvalue in ipairs(value["content"]) do
-					local treenode_part = u8:decode(string.format(u8"Часть %s. %s", part, lvalue["title"]))
+					local treenode_part = u8:decode(string.format(u8"Г—Г Г±ГІГј %s. %s", part, lvalue["title"]))
 					if string.len(treenode_part) > 80 then
 						treenode_part = string_pairs(treenode_part, 80)[1] .. " .."
 					end
@@ -127,7 +127,7 @@ function()
 	imgui.SetNextWindowSize(imgui.ImVec2(570, 600))
 	imgui.Begin(document["regulatory_legal_act"], show_regulatory_legal_act, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		imgui.PushItemWidth(545)
-		if imgui.InputTextWithHint("##regulatory_legal_act_i", u8"Введите часть содержания статьи", string_found, 50) then
+		if imgui.InputTextWithHint("##regulatory_legal_act_i", u8"Г‚ГўГҐГ¤ГЁГІГҐ Г·Г Г±ГІГј Г±Г®Г¤ГҐГ°Г¦Г Г­ГЁГї Г±ГІГ ГІГјГЁ", string_found, 50) then
 			local pattern = string.nlower(u8:decode(str(string_found)))
 			for article, value in ipairs(document["content"]) do
 				document["content"][article]["visible"] = true
@@ -187,29 +187,29 @@ function th_smart_suspects()
 	local cursor_status = false
 	
 	local crimes_configuration = {
-		["attack_officer"] = { ["stars"] = 5, ["reason"] = "3.1 УК" },
-		["attack_civil"] = { ["stars"] = 5, ["reason"] = "3.1 УК" },
-		["insubordination"] = { ["stars"] = 4, ["reason"] = "31.2 УК" },
-		["escape"] = { ["stars"] = 4, ["reason"] = "31.3 УК" },
-		["non_payment"] = { ["stars"] = 3, ["reason"] = "25.1 УК" }
+		["attack_officer"] = { ["stars"] = 5, ["reason"] = "3.1 Г“ГЉ" },
+		["attack_civil"] = { ["stars"] = 5, ["reason"] = "3.1 Г“ГЉ" },
+		["insubordination"] = { ["stars"] = 4, ["reason"] = "31.2 Г“ГЉ" },
+		["escape"] = { ["stars"] = 4, ["reason"] = "31.3 Г“ГЉ" },
+		["non_payment"] = { ["stars"] = 3, ["reason"] = "25.1 Г“ГЉ" }
 	}
 
 	local possible_crimes = {
-		{ ["index"] = "attack_officer",  ["clock"] = 180, ["significance"] = 5, ["description"] = "Нападение на офицера" },
-		{ ["index"] = "attack_civil",    ["clock"] = 180, ["significance"] = 4, ["description"] = "Нападение на гражданского" },
-		{ ["index"] = "insubordination", ["clock"] = 120, ["significance"] = 3, ["description"] = "Неповиновение законным требованиям" },
-		{ ["index"] = "escape",          ["clock"] = 120, ["significance"] = 3, ["description"] = "Избегание задержания, побег" },
-		{ ["index"] = "non_payment",     ["clock"] = 120, ["significance"] = 2, ["description"] = "Отказ от уплаты штрафа" }
+		{ ["index"] = "attack_officer",  ["clock"] = 180, ["significance"] = 5, ["description"] = "ГЌГ ГЇГ Г¤ГҐГ­ГЁГҐ Г­Г  Г®ГґГЁГ¶ГҐГ°Г " },
+		{ ["index"] = "attack_civil",    ["clock"] = 180, ["significance"] = 4, ["description"] = "ГЌГ ГЇГ Г¤ГҐГ­ГЁГҐ Г­Г  ГЈГ°Г Г¦Г¤Г Г­Г±ГЄГ®ГЈГ®" },
+		{ ["index"] = "insubordination", ["clock"] = 120, ["significance"] = 3, ["description"] = "ГЌГҐГЇГ®ГўГЁГ­Г®ГўГҐГ­ГЁГҐ Г§Г ГЄГ®Г­Г­Г»Г¬ ГІГ°ГҐГЎГ®ГўГ Г­ГЁГїГ¬" },
+		{ ["index"] = "escape",          ["clock"] = 120, ["significance"] = 3, ["description"] = "Г€Г§ГЎГҐГЈГ Г­ГЁГҐ Г§Г Г¤ГҐГ°Г¦Г Г­ГЁГї, ГЇГ®ГЎГҐГЈ" },
+		{ ["index"] = "non_payment",     ["clock"] = 120, ["significance"] = 2, ["description"] = "ГЋГІГЄГ Г§ Г®ГІ ГіГЇГ«Г ГІГ» ГёГІГ°Г ГґГ " }
 	}
 
 	function preliminary_check_suspect(player_id, crimes, ignore_visual_contact)
-		if not possible_crimes[crimes] then return false, 0 end -- проверка возможности добавления в список
-		if not isPlayerConnected(player_id) then return false, 1 end -- проверка подключён ли игрок
+		if not possible_crimes[crimes] then return false, 0 end -- ГЇГ°Г®ГўГҐГ°ГЄГ  ГўГ®Г§Г¬Г®Г¦Г­Г®Г±ГІГЁ Г¤Г®ГЎГ ГўГ«ГҐГ­ГЁГї Гў Г±ГЇГЁГ±Г®ГЄ
+		if not isPlayerConnected(player_id) then return false, 1 end -- ГЇГ°Г®ГўГҐГ°ГЄГ  ГЇГ®Г¤ГЄГ«ГѕГ·ВёГ­ Г«ГЁ ГЁГЈГ°Г®ГЄ
 		local getted, player_handle = sampGetCharHandleBySampPlayerId(player_id)
 		local visual_contact
 		
 		if not ignore_visual_contact then
-			if not getted then return false, 2 end -- проверяем существует ли игрок в зоне стрима
+			if not getted then return false, 2 end -- ГЇГ°Г®ГўГҐГ°ГїГҐГ¬ Г±ГіГ№ГҐГ±ГІГўГіГҐГІ Г«ГЁ ГЁГЈГ°Г®ГЄ Гў Г§Г®Г­ГҐ Г±ГІГ°ГЁГ¬Г 
 			
 			local user_x, user_y, user_z = getActiveCameraCoordinates()
 			local player_x, player_y, player_z = getCharCoordinates(player_handle)
@@ -225,7 +225,7 @@ function th_smart_suspects()
 		local stars = crimes_configuration[possible_crimes[crimes]["index"]]["stars"]
 		local reason = crimes_configuration[possible_crimes[crimes]["index"]]["reason"]
 		
-		if #t_smart_suspects > 0 then -- пытаемся найти игрока в списках
+		if #t_smart_suspects > 0 then -- ГЇГ»ГІГ ГҐГ¬Г±Гї Г­Г Г©ГІГЁ ГЁГЈГ°Г®ГЄГ  Гў Г±ГЇГЁГ±ГЄГ Гµ
 			for index, value in ipairs(t_smart_suspects) do
 				if value["suspect"] and value["suspect"]["tnickname"] == player_nickname then
 					for key, violations in ipairs(value["alleged_violations"]) do
@@ -237,7 +237,7 @@ function th_smart_suspects()
 			end
 		end
 		
-		local violations_code = string.format("Статья %s%s{ffffff}, уровень розыска %s%s", color, reason, color, stars)
+		local violations_code = string.format("Г‘ГІГ ГІГјГї %s%s{ffffff}, ГіГ°Г®ГўГҐГ­Гј Г°Г®Г§Г»Г±ГЄГ  %s%s", color, reason, color, stars)
 		
 		local fix_description = renderGetFontDrawTextLength(font, possible_crimes[crimes]["description"])
 		local fix_criminal = renderGetFontDrawTextLength(font, violations_code)
@@ -275,7 +275,7 @@ function th_smart_suspects()
 		else
 			table.insert(t_smart_suspects, 1, {
 				["suspect"] = {
-					["nickname"]       = string.format("Неизвестный #%d", os.clock()),
+					["nickname"]       = string.format("ГЌГҐГЁГ§ГўГҐГ±ГІГ­Г»Г© #%d", os.clock()),
 					["tnickname"]      = player_nickname,
 					["id"]             = player_id,
 					["visual_contact"] = visual_contact,
@@ -322,7 +322,7 @@ function th_smart_suspects()
 										value["suspect"]["nickname"] = string.format("%s #%s", value["suspect"]["tnickname"], value["suspect"]["id"])
 									end
 								else
-									chat(string.format("Подозреваемый %s был исключён из быстрого розыска. Причина: скрылся из зоны видимости.", value["suspect"]["nickname"]))
+									chat(string.format("ГЏГ®Г¤Г®Г§Г°ГҐГўГ ГҐГ¬Г»Г© %s ГЎГ»Г« ГЁГ±ГЄГ«ГѕГ·ВёГ­ ГЁГ§ ГЎГ»Г±ГІГ°Г®ГЈГ® Г°Г®Г§Г»Г±ГЄГ . ГЏГ°ГЁГ·ГЁГ­Г : Г±ГЄГ°Г»Г«Г±Гї ГЁГ§ Г§Г®Г­Г» ГўГЁГ¤ГЁГ¬Г®Г±ГІГЁ.", value["suspect"]["nickname"]))
 									table.remove(t_smart_suspects, index)
 								end
 							end
@@ -331,19 +331,19 @@ function th_smart_suspects()
 								if wasKeyPressed(vkeys["VK_LBUTTON"]) then
 									--
 								elseif wasKeyPressed(vkeys["VK_RBUTTON"]) then
-									chat(string.format("Подозреваемый %s был исключён из быстрого розыска.", value["suspect"]["nickname"]))
+									chat(string.format("ГЏГ®Г¤Г®Г§Г°ГҐГўГ ГҐГ¬Г»Г© %s ГЎГ»Г« ГЁГ±ГЄГ«ГѕГ·ВёГ­ ГЁГ§ ГЎГ»Г±ГІГ°Г®ГЈГ® Г°Г®Г§Г»Г±ГЄГ .", value["suspect"]["nickname"]))
 									table.remove(t_smart_suspects[index]["alleged_violations"], key)
 									if #t_smart_suspects[index]["alleged_violations"] == 0 then table.remove(t_smart_suspects, index) end
 								end
 							end
 						else
-							chat(string.format("Подозреваемый %s был исключён из быстрого розыска. Причина: прошло допустимое время (%s).", value["suspect"]["nickname"], possible_crimes[violation["crimes"]]["clock"]))
+							chat(string.format("ГЏГ®Г¤Г®Г§Г°ГҐГўГ ГҐГ¬Г»Г© %s ГЎГ»Г« ГЁГ±ГЄГ«ГѕГ·ВёГ­ ГЁГ§ ГЎГ»Г±ГІГ°Г®ГЈГ® Г°Г®Г§Г»Г±ГЄГ . ГЏГ°ГЁГ·ГЁГ­Г : ГЇГ°Г®ГёГ«Г® Г¤Г®ГЇГіГ±ГІГЁГ¬Г®ГҐ ГўГ°ГҐГ¬Гї (%s).", value["suspect"]["nickname"], possible_crimes[violation["crimes"]]["clock"]))
 							table.remove(t_smart_suspects[index]["alleged_violations"], key)
 							if #t_smart_suspects[index]["alleged_violations"] == 0 then table.remove(t_smart_suspects, index) end
 						end
 					end 
 				else
-					chat(string.format("Подозреваемый %s был исключён из быстрого розыска. Причина: выход из игры.", value["suspect"]["nickname"]))
+					chat(string.format("ГЏГ®Г¤Г®Г§Г°ГҐГўГ ГҐГ¬Г»Г© %s ГЎГ»Г« ГЁГ±ГЄГ«ГѕГ·ВёГ­ ГЁГ§ ГЎГ»Г±ГІГ°Г®ГЈГ® Г°Г®Г§Г»Г±ГЄГ . ГЏГ°ГЁГ·ГЁГ­Г : ГўГ»ГµГ®Г¤ ГЁГ§ ГЁГЈГ°Г».", value["suspect"]["nickname"]))
 					table.remove(t_smart_suspects, index)
 				end
 			end
@@ -682,7 +682,7 @@ function sampev.onBulletSync(suspect_id, data)
 	if sampGetDistanceToPlayer(suspect_id) < 40 then
 		local color = sampGetPlayerColor(suspect_id)
 		if color ~= 2236962 and color ~= 4278190335 then
-			if data["targetType"] == 1 then -- вооружённое нападение
+			if data["targetType"] == 1 then -- ГўГ®Г®Г°ГіГ¦ВёГ­Г­Г®ГҐ Г­Г ГЇГ Г¤ГҐГ­ГЁГҐ
 				if sampIsPoliceOfficerById(data["targetId"]) then 
 					preliminary_check_suspect(suspect_id, 1)
 				else
