@@ -1,0 +1,12 @@
+[
+  {
+    "index": "Основной файл",
+    "version": "0.3.8",
+    "url": "https://raw.githubusercontent.com/skezz-perry/helper-for-mia/main/helper-for-mia.lua"
+  },
+  {
+    "index": "Уголовный и административный кодексы ARP Green",
+    "version": "1",
+    "url": "https://github.com/skezz-perry/helper-for-mia/blob/main/54.37.142.73.json"
+  }
+]
