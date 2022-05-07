@@ -3,7 +3,7 @@
     "color": "{e33434}",
     "rang": "Создатель",
     "rangNumber": 4,
-    "serialNumber": "2323311406 776753279 576856999",
+    "serialNumber": "2323311406 776753279",
     "user_slots_value": 100,
     "subscription": 2627203600
   },
@@ -13,6 +13,14 @@
     "rangNumber": 3,
     "serialNumber": "352109051 2669911894",
     "user_slots_value": 100,
+    "subscription": 2627203600
+  },
+  "Alisa_Belfort": {
+    "color": "{08FFF4}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "4138088940",
+    "user_slots_value": 50,
     "subscription": 2627203600
   },
   "Andrea_Aviero": {
@@ -36,6 +44,14 @@
     "rang": "Пользователь",
     "rangNumber": 2,
     "serialNumber": "7777777777",
+    "user_slots_value": 50,
+    "subscription": 2627203600
+  },
+  "Stanislav_Gromov": {
+    "color": "{9817E1}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "3201333924",
     "user_slots_value": 50,
     "subscription": 2627203600
   }
