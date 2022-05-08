@@ -26,7 +26,7 @@ imgui.HotKey = mimgui_addons.HotKey
 
 -- configuration
 local function configuration_file(directory, filename, template)
-	if type(directory) ~= "string" then return false, "CF-F1" end asd
+	if type(directory) ~= "string" then return false, "CF-F1" end
 	if type(filename) ~= "string" then return false, "CF-F2" end
 	if type(template) ~= "table" then return false, "CF-F3" end
 	if not doesDirectoryExist(directory) then createDirectory(directory) end
