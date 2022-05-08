@@ -26,7 +26,7 @@ imgui.HotKey = mimgui_addons.HotKey
 
 -- configuration
 local function configuration_file(directory, filename, template)
-	if type(directory) ~= "string" then return false, "CF-F1" end
+	if type(directory) ~= "string" then return false, "CF-F1" end asd
 	if type(filename) ~= "string" then return false, "CF-F2" end
 	if type(template) ~= "table" then return false, "CF-F3" end
 	if not doesDirectoryExist(directory) then createDirectory(directory) end
@@ -7720,7 +7720,7 @@ function checking_relevance_versions_and_files()
 				end
 			end
 		else
-			local file = https.request(versions[1]["url"])
+			local file = https.request(versions["MAIN"]["url"])
 			if file then
 				chat("Игровой помощник был автоматически обновлён до новейшей версии. Подробнее в разделе новостей ({HEX}/mh{}).")
 				local file_text = u8:decode(file)
