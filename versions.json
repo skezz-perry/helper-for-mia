@@ -1,7 +1,7 @@
 {
   "MAIN": {
     "index": "Основной файл",
-    "version": "0.3.8",
+    "version": "0.3.9",
     "url": "https://raw.githubusercontent.com/skezz-perry/helper-for-mia/main/helper-for-mia.lua"
   },
   "NPA-GREEN": {
