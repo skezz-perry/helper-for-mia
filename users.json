@@ -54,5 +54,13 @@
     "serialNumber": "3201333924",
     "user_slots_value": 50,
     "subscription": 2627203600
+  },
+  "Evgeniy_Stavrogin": {
+    "color": "{023493}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "551324144",
+    "user_slots_value": 50,
+    "subscription": 2627203600
   }
 }
