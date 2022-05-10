@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.3.9")
+script_version("0.4.0")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require 
@@ -77,6 +77,48 @@ local configuration = {
 			["template"] = {
 				["USERS"] = {
 					["main"] = {}
+				},
+				["LOW_ACTION"] = {
+					["male"] = {
+						["healme"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/me вытащил из подсумка индивидуальную аптечку, достал из неё шприц с морфином и сделал внутримышечную инъекцию себе в бедро." },
+								{ u8"/me вытащил из подсумка индивидуальную аптечку, достал из неё шприц с адреналином и сделал внутримышечную инъекцию себе в бедро." },
+								{ u8"/me вытащил из подсумка индивидуальную аптечку, взял из неё тюбик с таблетками трамадола и закинул несколько из них себе в рот." },
+								{ u8"/me вытащил из подсумка индивидуальную аптечку, взял из неё тюбик с таблетками кофеина и закинул несколько из них себе в рот." }
+							}
+						},
+						["mask"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/me раскрыл поясную сумку, достал чёрную балаклаву и надел её на себя." }
+							}
+						},
+						["unmask"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/do Маска всё ещё находится на лице $rpname.{my_id}." }
+							}
+						}
+					},
+					["female"] = {
+						["healme"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/me вытащила из подсумка индивидуальную аптечку, достала из неё шприц с морфином и сделала внутримышечную инъекцию себе в бедро." },
+								{ u8"/me вытащила из подсумка индивидуальную аптечку, достала из неё шприц с адреналином и сделала внутримышечную инъекцию себе в бедро." },
+								{ u8"/me вытащила из подсумка индивидуальную аптечку, взяла из неё тюбик с таблетками трамадола и закинула несколько из них себе в рот." },
+								{ u8"/me вытащила из подсумка индивидуальную аптечку, взяла из неё тюбик с таблетками кофеина и закинула несколько из них себе в рот." }
+							}
+						},
+						["mask"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/me раскрыла поясную сумку, достала чёрную балаклаву и надела её на себя." }
+							}
+						},
+						["unmask"] = {
+							["status"] = true, ["variations"] = {
+								{ u8"/do Маска всё ещё находится на лице $rpname.{my_id}." }
+							}
+						}
+					}
 				},
 				["SYSTEM"] = {
 					["usual"] = {
@@ -427,6 +469,15 @@ local configuration = {
 									u8"/medhelp {1} {2}"
 								}
 							}
+						},
+						["tracker"] = {
+							["status"] = true, ["variations"] = {
+								{
+									u8"/me зажал кнопку активации GNSS-трекера до характерной вибрации включения.",
+									u8"$wait 500",
+									u8"/su {1} {2} GNSS-трекер"
+								}
+							}
 						}
 					},
 					["female"] = {
@@ -732,6 +783,15 @@ local configuration = {
 									u8"/medhelp {1} {2}"
 								}
 							}
+						},
+						["tracker"] = {
+							["status"] = true, ["variations"] = {
+								{
+									u8"/me зажала кнопку активации GNSS-трекерa до характерной вибрации включения.",
+									u8"$wait 500",
+									u8"/su {1} {2} GNSS-трекер"
+								}
+							}
 						}
 					}
 				}
@@ -969,6 +1029,7 @@ local ti_system_commands = {
 	{ ["index"] = "hold",           ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_hold",           ["description"] = u8"Принудительно тащит игрока за собой с RP-отыгровкой." },
 	{ ["index"] = "pull",           ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_pull",           ["description"] = u8"Вытаскивает игрока из автомобиля." },
 	{ ["index"] = "su",             ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_su",             ["description"] = u8"Объявляет подозреваемого в розыск с RP-отыгровками." },
+	{ ["index"] = "tracker",        ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_tracker",        ["description"] = u8"Устанавливает GNSS-трекер на игрока (розыск)." },
 	{ ["index"] = "skip",           ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_skip",           ["description"] = u8"Выписывает временный пропуск игроку с RP-отыгровками." },
 	{ ["index"] = "clear",          ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_clear",          ["description"] = u8"Удаляет игрока из федерального розыска с RP-отыгровками." },
 	{ ["index"] = "ticket",         ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_ticket",         ["description"] = u8"Выписывает штрафную квитанцию с RP-отыгровками." },
@@ -1023,6 +1084,23 @@ local ti_system_commands = {
 
 -- global value 
 local update_log = {
+	{
+		"version 0.4.0",
+		{
+			u8"Внесены следующие изменения в патрульного ассистента:",
+			u8"1. Изменён интерфейс настройки маркировок и статуса патруля (/patrol);",
+			u8"1.1. Добавлена возможность 'тихого' выхода в патруль и его завершения;",
+			u8"1.2. Добавлена маркировка Unit.",
+			u8"2. Изменён патрульный интерфейс;",
+			u8"2.1 Добавлены кнопки активации GNSS-трекера, списка радио-тэгов;",
+			u8"2.2 Добавлена кнопка переключения волны для сообщений о погоне;",
+			u8"2.3 Добавлена кнопка принятия вызова в полицию;",
+			u8"2.4 Добавлено название района, в котором находится юнит;",
+			u8"2.5 Добавлено направление стороны света, в которую смотрит юнит.",
+			"",
+			u8"Прочие незначительные изменения и исправления."
+		}
+	},
 	{
 		"version 0.3.9",
 		{
@@ -1249,6 +1327,9 @@ local last_damage_id
 local viewing_documents = false
 local is_script_exit
 local im_weapons_selected = 24
+local global_samp_cursor_status = false
+local destroy_samp_cursor = true
+local global_radio = "r"
 
 local t_mimgui_render = {
 	["main_menu"] = new.bool(false),
@@ -1261,7 +1342,7 @@ local t_mimgui_render = {
 local font_size = new.int(0)
 local string_found = new.char[256]()
 local t_delay_between_deaths = new.int(configuration["MAIN"]["settings"]["delay_between_deaths"])
-local imgui_patrol_list = new('const char* const [10]', {"L (Lincoln)", "A (Adam)", "M (Merry)", "C (Charley)", "D (David)", "H (Henry)", "ASD (Air Support Division)", "SUPERVISOR"})
+local imgui_patrol_list = new('const char* const [11]', {"Unit", "L (Lincoln)", "A (Adam)", "M (Mary)", "C (Charley)", "D (David)", "H (Henry)", "ASD (Air Support Division)", "SUPERVISOR"})
 local imgui_patrol_current = new.int(0)
 local imgui_patrol_number = new.char[256]()
 local imgui_custom_float = new.float(0)
@@ -1278,7 +1359,7 @@ local t_last_suspect_parametrs = {}
 local patrol_status = {}
 local t_patrol_status = {}
 local t_accept_the_offer
-local convert_patrol_list = {"L", "A", "M", "C", "D", "H", "ASD", "SUPERVISOR"}
+local convert_patrol_list = {"Unit", "L", "A", "M", "C", "D", "H", "ASD", "SUPERVISOR"}
 local camera = {}
 local t_map_marker = {}
 local goverment_news = {}
@@ -1299,6 +1380,8 @@ local documents = {}
 local global_current_document
 local t_player_text = {}
 local t_suspects_stars = {}
+local t_patrol_area = { ["area"] = "Неизвестно", ["clock"] = os.clock() }
+local t_accept_police_call
 
 local t_database_search = { 
 	{ ["index"] = u8"Игроки", ["matches"] = 0, ["content"] = {} },
@@ -1447,14 +1530,40 @@ local t_quick_suspect = {
 
 -- const 
 local abbreviated_codes = {
-	["cod 11"] = {"Говорит $m, занимаю маркировку $m, CODE 1-1, доступен.", function() patrol_status["status"] = "4" end},
-	["cod 13"] = {"Говорит $m, завершаю патрулирование, освобождаю маркировку $m, CODE 1-3, недоступен.", function() patrol_status["status"] = "4" end},
-	["cod 14"] = {"Говорит $m, доставляю подозреваемого в департамент, CODE 1-4, недоступен.", function() patrol_status["status"] = "1-4" end},
-	["tf 55"] = {"Говорит $m, провожу траффик-стоп '55, CODE 4, нахожусь в районе $p, недоступен.", function() patrol_status["status"] = "4" end},
-	["tf 66"] = {"Говорит $m, провожу траффик-стоп '66, CODE 3, нахожусь в районе $p, недоступен.", function() patrol_status["status"] = "3" end}, 
-	["cod 0"] = {"Говорит $m, CODE 0, требуется срочная помощь в район $p, недоступен.", function() patrol_status["status"] = "0" end},
-	["cod 1"] = {"Говорит $m, CODE 1, требуется помощь в район $p, недоступен.", function() patrol_status["status"] = "1" end}, 
-	["s 99"] = {"Говорит $m, 10-99 по последней ситуации, CODE 4, доступен.", function() patrol_status["status"] = "4" end}
+	{ "cod 0", "Говорит $m, CODE 0, требуется срочная помощь в район $p, недоступен.", function() patrol_status["status"] = "0" end },
+	{ "cod 1", "Говорит $m, CODE 1, требуется помощь в район $p, недоступен.", function() patrol_status["status"] = "1" end }, 
+	{ "cod 11", "Говорит $m, занимаю маркировку $m, CODE 1-1, доступен.",  function() patrol_status["status"] = "4" end },
+	{ "cod 13", "Говорит $m, завершаю патрулирование, освобождаю текущую маркировку, CODE 1-3, недоступен.", function() patrol_status["status"] = "4" end },
+	{ "cod 14", "Говорит $m, доставляю подозреваемого в департамент, CODE 1-4, недоступен.", function() patrol_status["status"] = "1-4" end },
+	{ "tf 55", "Говорит $m, провожу траффик-стоп '55, CODE 4, нахожусь в районе $p, недоступен.", function() patrol_status["status"] = "4" end },
+	{ "tf 66", "Говорит $m, провожу траффик-стоп '66, CODE 3, нахожусь в районе $p, недоступен.", function() patrol_status["status"] = "3" end },
+	{ "s 99", "Говорит $m, 10-99 по последней ситуации, CODE 4, доступен.", function() patrol_status["status"] = "4" end }
+}
+
+local handler_tags = {
+	{ "{greeting}", function() return greeting_depending_on_the_time() end },
+	{ "{my_id}", function()
+			local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+			return result and player_id or 0
+		end 
+	},
+	{ "{name}", function() return u8:decode(configuration["MAIN"]["information"]["name"]) end },
+	{ "{rang}", function() return u8:decode(configuration["MAIN"]["information"]["rang"]) end },
+	{ "{fraction}", function() return u8:decode(configuration["MAIN"]["information"]["fraction"]) end },
+	{ "{number}", function() return u8:decode(configuration["MAIN"]["information"]["number"]) end },
+	{ "{targeting}", function() return targeting_player end },
+	{ "{suspect}", function() return t_smart_suspects[1] and t_smart_suspects[1]["player_id"] or "-1" end },
+	{ "{date}", function() return os.date("%d.%m.%Y") end },
+	{ "{day}", function() return os.date("%d") end },
+	{ "{month}", function() return os.date("%m") end },
+	{ "{year}", function() return os.date("%y") end },
+	{ "{year4}", function() return os.date("%Y") end },
+	{ "{day_of_week}", function() return os.date("%A") end },
+	{ "{time}", function() return os.date("%H:%M:%S") end },
+	{ "{hour}", function() return os.date("%H") end },
+	{ "{minute}", function() return os.date("%M") end },
+	{ "{second}", function() return os.date("%S") end },
+	{ "{last_number}", function() return tostring(last_sms_number) end }
 }
 
 local t_fuel_station = {
@@ -1518,7 +1627,7 @@ local t_points_completed_orders = {
 	["Округ Ред"] = {x = 1558.5964355469, y = 27.0146484375, z = 22}
 }
 
-local maximum_number_of_characters = {["me"] = 90, ["do"] = 75, ["r"] = 70, ["f"] = 70, ["g"] = 70, ["fm"] = 70, ["m"] = 80}
+local maximum_number_of_characters = {["me"] = 90, ["do"] = 75, ["r"] = 80, ["f"] = 80, ["g"] = 80, ["fm"] = 80, ["m"] = 80}
 local lcons = {}
 local w, h = getScreenResolution()
 local imgui_script_name = u8"всегда радуйтесь"
@@ -1676,99 +1785,204 @@ end)
 imgui.OnFrame(function() return t_mimgui_render["patrol_bar"][0] end, -- патрульный интерфейс (зачем?)
 function(player)
 	imgui.SetNextWindowPos(imgui.ImVec2(40, h / 2), imgui.Cond.FirstUseEver)
-	imgui.SetNextWindowSize(imgui.ImVec2(265, 92))
+	imgui.SetNextWindowSize(imgui.ImVec2(270, 100))
 	imgui.Begin(string.format("%s##6", imgui_script_name), t_mimgui_render["patrol_bar"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
-		player.HideCursor = not isKeyDown(VK_MBUTTON)
+		player.HideCursor = not global_samp_cursor_status
 		
-		local alltime = math.floor(os.clock() - patrol_status["clock"])
-		local second = math.fmod(alltime, 60)
-		imgui.CustomButton(u8"В ПАТРУЛЕ", imgui.ImVec2(130, 20)) imgui.SameLine()
-		imgui.Button(string.format(u8"%s:%s", math.floor(alltime / 60), (second < 10 and "0" .. second or second)), imgui.ImVec2(100, 20))
+		imgui.SetCursorPos(imgui.ImVec2(10, 10))
+		imgui.BeginChild("##main", imgui.ImVec2(100, 80))
+			local alltime = math.floor(os.clock() - patrol_status["clock"])
+			local second = math.fmod(alltime, 60)
+			
+			local mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
+			local code = patrol_status["status"]
+			
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.Button(string.format(u8"%s:%s", math.floor(alltime / 60), (second < 10 and "0" .. second or second)), imgui.ImVec2(90, 20))
+			
+			imgui.SetCursorPosX(5) -- fix X
+			imgui.Button(string.format("%s", mark), imgui.ImVec2(90, 20))
+			
+			imgui.SetCursorPosX(5) -- fix X
+			imgui.Button(string.format("CODE %s", code), imgui.ImVec2(90, 20))
+		imgui.EndChild()
 		
-		local mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
-		imgui.CustomButton(u8"МАРКИРОВКА ЮНИТА", imgui.ImVec2(130, 20)) imgui.SameLine()
-		imgui.Button(string.format("%s", mark), imgui.ImVec2(100, 20))
-
-		local code = patrol_status["status"]
-		imgui.CustomButton(u8"КОД-СТАТУС", imgui.ImVec2(130, 20)) imgui.SameLine()
-		imgui.Button(string.format("CODE %s", code), imgui.ImVec2(100, 20))
+		imgui.SameLine()
+		
+		imgui.BeginChild("##action", imgui.ImVec2(140, 80))
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			if imgui.Button(faicons["ICON_MAP_MARKER"], imgui.ImVec2(25, 20)) then
+				local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+				command_tracker(string.format("%s %s", player_id, 1))
+			end
+			imgui.Hint("##gnss-tracker", u8"Нажмите, чтобы активировать GNSS-трекер.")
+			
+			imgui.SameLine() -- same
+			
+			if imgui.Button(faicons["ICON_TAGS"], imgui.ImVec2(25, 20)) then
+				command_rtag()
+			end
+			imgui.Hint("##patrol_tags", u8"Нажмите, чтобы открыть список кодов для рации.")
+			
+			imgui.SameLine() -- same
+			
+			if global_radio == "r" then
+				if imgui.Button("R", imgui.ImVec2(25, 20)) then global_radio = "f" end
+				imgui.Hint("##radio", u8"Нажмите, чтобы изменить волну для сообщений.")
+			else
+				if imgui.Button("F", imgui.ImVec2(25, 20)) then global_radio = "r" end
+				imgui.Hint("##radio", u8"Нажмите, чтобы изменить волну для сообщений.")
+			end
+			
+			imgui.SameLine() -- same
+			
+			if t_accept_police_call then
+				if imgui.CustomButton(faicons["ICON_VOLUME_CONTROL_PHONE"], imgui.ImVec2(25, 20), imgui.ImVec4(0.8, 0.36, 0.36, 1.00)) then 
+					sampSendChat(string.format("/to %s", t_accept_police_call["id"])) 
+					t_accept_police_call = false
+				end
+				
+				imgui.Hint("##police_call", u8"Нажмите, чтобы принять вызов.")
+			else
+				imgui.Button(faicons["ICON_PHONE"], imgui.ImVec2(25, 20))
+				imgui.Hint("##police_call", u8"Пока что не поступало никаких вызовов.")
+			end
+			
+			if os.clock() - t_patrol_area["clock"] > 1 then t_patrol_area["area"] = calculateZone() end
+			imgui.SetCursorPos(imgui.ImVec2(5, 33))
+			imgui.Button(t_patrol_area["area"], imgui.ImVec2(130, 20))
+			
+			imgui.SetCursorPosY(60)
+			local direction, angel = patrol_direction()
+			imgui.CenterText(string.format("%s %s (%s)", faicons["ICON_COMPASS"], u8(direction), angel))
+		imgui.EndChild()
 	imgui.End()
 end)
 
 imgui.OnFrame(function() return t_mimgui_render["setting_patrol"][0] end, -- настройка патрульного ассистента
 function()
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-	imgui.SetNextWindowSize(imgui.ImVec2(360, 140))
+	imgui.SetNextWindowSize(imgui.ImVec2(450, 105))
 	imgui.Begin(string.format("%s##5", imgui_script_name), t_mimgui_render["setting_patrol"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
-		imgui.CustomButton(u8"Маркировка юнита", imgui.ImVec2(120, 20))  imgui.SameLine() 
-		imgui.PushItemWidth(90)--45)
-		if imgui.Combo("##combo", imgui_patrol_current, imgui_patrol_list, 8) then 
-			t_patrol_status["mark"] = convert_patrol_list[imgui_patrol_current[0] + 1]
-		end imgui.SameLine()
-		if imgui.Button(u8"ОПРЕДЕЛИТЬ", imgui.ImVec2(110, 20)) then
-			local mark, number = sampGetMarkCharByVehicle(playerPed)
-			imgui_patrol_current[0] = number
-			t_patrol_status["mark"] = mark
-		end imgui.Hint("mark_unit", u8"Автоматически определит маркировку для вашего юнита.")
+		imgui.BeginChild("##mark_and_number", imgui.ImVec2(350, 63))
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.BeginGroup() -- маркировка юнита
+				imgui.CustomButton(u8"Маркировка юнита", imgui.ImVec2(120, 20))  imgui.SameLine() 
+				imgui.PushItemWidth(90)
+				if imgui.Combo("##combo", imgui_patrol_current, imgui_patrol_list, 9) then 
+					t_patrol_status["mark"] = convert_patrol_list[imgui_patrol_current[0] + 1]
+				end 
+				
+				imgui.SameLine() -- same
+				
+				if imgui.Button(u8"Определить", imgui.ImVec2(110, 20)) then
+					local mark, number = sampGetMarkCharByVehicle(playerPed)
+					imgui_patrol_current[0] = number
+					t_patrol_status["mark"] = mark
+				end 
+				
+				imgui.Hint("mark_unit", u8"Автоматически определит маркировку для вашего юнита.")
+			imgui.EndGroup()
+			
+			imgui.SetCursorPosX(5)
+			
+			imgui.BeginGroup() -- номер юнита
+				imgui.CustomButton(u8"Номер юнита", imgui.ImVec2(120, 20))  imgui.SameLine() 
+				imgui.PushItemWidth(90)
+				if imgui.InputTextWithHint("##unitnumber", u8"(1 - 99)", imgui_patrol_number, 10) then
+					local number = tonumber(str(imgui_patrol_number))
+					if not number or number < 0 or number > 99 then imgui_patrol_number = new.char[256]() end
+					t_patrol_status["number"] = number
+				end
+				
+				imgui.SameLine() -- same
+				
+				if imgui.Button(u8"Сгенерировать", imgui.ImVec2(110, 20)) then 
+					local random = math.random(1, 100)
+					imgui_patrol_number = new.char[256](tostring(random))
+					t_patrol_status["number"] = random
+				end 
+				imgui.Hint("generate_mark_unit", u8"Сгенерирует уникальный номер юнита.")
+			imgui.EndGroup()
+		imgui.EndChild()
 		
-		imgui.CustomButton(u8"Номер юнита", imgui.ImVec2(120, 20))  imgui.SameLine() 
-		imgui.PushItemWidth(90)
-		if imgui.InputTextWithHint("##unitnumber", u8"(1 - 99)", imgui_patrol_number, 10) then
-			local number = tonumber(str(imgui_patrol_number))
-			if not number or number < 0 or number > 99 then imgui_patrol_number = new.char[256]() end
-			t_patrol_status["number"] = number
-		end
+		imgui.SameLine() -- same
 		
-		imgui.SameLine()
-		if imgui.Button(u8"СГЕНЕРИРОВАТЬ", imgui.ImVec2(110, 20)) then 
-			local random = math.random(1, 100)
-			imgui_patrol_number = new.char[256](tostring(random))
-			t_patrol_status["number"] = random
-		end imgui.Hint("generate_mark_unit", u8"Сгенерирует уникальный номер юнита.")
-		
-		imgui.NewLine()
-		
-		if patrol_status["status"] then
-			if t_patrol_status["mark"] == patrol_status["mark"] and t_patrol_status["number"] == patrol_status["number"] then
-				imgui.SetCursorPosX(85)
-				if imgui.Button(u8"ЗАВЕРШИТЬ ПАТРУЛИРОВАНИЕ") then
-					command_r("cod 13")
-					t_mimgui_render["patrol_bar"][0] = false
-					patrol_status = {}
+		imgui.BeginChild("##active", imgui.ImVec2(70, 63))
+			if patrol_status["status"] then
+				if t_patrol_status["mark"] == patrol_status["mark"] and t_patrol_status["number"] == patrol_status["number"] then
+					imgui.SetCursorPos(imgui.ImVec2(5, 5))
+					if imgui.Button(faicons["ICON_TIMES_CIRCLE"], imgui.ImVec2(60, 20)) then -- окончание
+						command_r("cod 13")
+						t_mimgui_render["patrol_bar"][0] = false
+						patrol_status = {}
+					end
+					
+					imgui.Hint("##finish", u8"Нажмите, чтобы завершить патрулирование.")
+					
+					imgui.SetCursorPos(imgui.ImVec2(5, 35))
+					if imgui.Button(faicons["ICON_EYE_SLASH"], imgui.ImVec2(60, 20)) then -- тихое окончание
+						t_mimgui_render["patrol_bar"][0] = false
+						patrol_status = {}
+					end
+					
+					imgui.Hint("##silence_finish", u8"Нажмите, чтобы завершить патрулирование без уведомления в рацию.")
+				else
+					imgui.SetCursorPos(imgui.ImVec2(5, 5))
+					if imgui.Button(faicons["ICON_RETWEET"], imgui.ImVec2(60, 20)) then -- обновление данных
+						command_r(string.format("Говорит $m, меняю маркировку с текущей на %s-%s, доступен.", t_patrol_status["mark"], t_patrol_status["number"]))
+						patrol_status = { ["status"] = 4, ["mark"] = t_patrol_status["mark"], ["number"] = t_patrol_status["number"], ["clock"] = patrol_status["clock"] }
+					end
+					
+					imgui.Hint("##start", u8"Нажмите, чтобы обновить данные о патруле.")
+					
+					imgui.SetCursorPos(imgui.ImVec2(5, 35))
+					if imgui.Button(faicons["ICON_TIMES_CIRCLE"], imgui.ImVec2(25, 20)) then -- окончание
+						command_r("cod 13")
+						t_mimgui_render["patrol_bar"][0] = false
+						patrol_status = {}
+					end
+					
+					imgui.Hint("##finish", u8"Нажмите, чтобы завершить патрулирование.")
+					
+					imgui.SameLine() -- same
+					
+					if imgui.Button(faicons["ICON_EYE_SLASH"], imgui.ImVec2(25, 20)) then -- тихое окончание
+						t_mimgui_render["patrol_bar"][0] = false
+						patrol_status = {}
+					end
+					
+					imgui.Hint("##silence_finish", u8"Нажмите, чтобы завершить патрулирование без уведомления в рацию.")
 				end
 			else
-				imgui.SetCursorPosX(18)
-				if imgui.Button(u8"ОБНОВИТЬ ДАННЫЕ") then
-					command_r(string.format("Говорит $m, меняю маркировку с текущей на %s-%s, доступен.", t_patrol_status["mark"], t_patrol_status["number"]))
-					patrol_status = {
-						status = 4,
-						mark = t_patrol_status["mark"],
-						number = t_patrol_status["number"],
-						clock = patrol_status["clock"]
-					}
-				end imgui.SameLine()
-			
-				if imgui.Button(u8"ЗАВЕРШИТЬ ПАТРУЛИРОВАНИЕ") then
-					command_r("cod 13")
-					t_mimgui_render["patrol_bar"][0] = false
-					patrol_status = {}
+				imgui.SetCursorPos(imgui.ImVec2(5, 5))
+				if imgui.Button(faicons["ICON_TAXI"], imgui.ImVec2(60, 20)) then
+					if t_patrol_status["mark"] and t_patrol_status["number"] then
+						patrol_status = { ["status"] = 4, ["mark"] = t_patrol_status["mark"], ["number"] = t_patrol_status["number"], ["clock"] = os.clock() }
+						t_mimgui_render["patrol_bar"][0] = true
+						command_r("cod 11")
+						chat("Чтобы активировать курсор для взаимодействия с патрульным блоком {HEX}нажмите клавишу B{}.")
+					else 
+						chat("Для начала необходимо указать маркировку и номер юнита.") 
+					end
 				end
+				
+				imgui.Hint("##start", u8"Нажмите, чтобы начать патрулирование.")
+				
+				imgui.SetCursorPos(imgui.ImVec2(5, 35))
+				if imgui.Button(faicons["ICON_EYE_SLASH"], imgui.ImVec2(60, 20)) then -- тихое начало
+					if t_patrol_status["mark"] and t_patrol_status["number"] then
+						patrol_status = { ["status"] = 4, ["mark"] = t_patrol_status["mark"], ["number"] = t_patrol_status["number"], ["clock"] = os.clock() }
+						t_mimgui_render["patrol_bar"][0] = true
+						chat("Чтобы активировать курсор для взаимодействия с патрульным блоком {HEX}нажмите клавишу B{}.")
+					else 
+						chat("Для начала необходимо указать маркировку и номер юнита.") 
+					end
+				end
+				
+				imgui.Hint("##silence_start", u8"Нажмите, чтобы начать патрулирование без уведомления в рацию.")
 			end
-		else
-			imgui.SetCursorPosX(95)
-			if imgui.Button(u8"НАЧАТЬ ПАТРУЛИРОВАНИЕ") then
-				if t_patrol_status["mark"] and t_patrol_status["number"] then
-					patrol_status = {
-						status = 4,
-						mark = t_patrol_status["mark"],
-						number = t_patrol_status["number"],
-						clock = os.clock()
-					}
-					t_mimgui_render["patrol_bar"][0] = true
-					command_r("cod 11")
-				else chat("Для начала необходимо указать маркировку и номер юнита.") end
-			end
-		end
+		imgui.EndChild()
 	imgui.End()
 end)
 
@@ -2251,6 +2465,13 @@ function()
 					imgui.TreePop()
 				end
 			end
+		elseif main_menu_navigation["current"] == 4 then
+			imgui.InputTextWithHint("##fd", "", string_found, 50)
+			for k, v in pairs(faicons) do
+				if string.match(string.lower(k), string.lower(str(string_found))) then
+					if imgui.Button(string.format("%s %s", k, v)) then setClipboardText(k) end
+				end
+			end
 		elseif main_menu_navigation["current"] == 5 then
 			if binder_menu_navigation["current"] == 4 then
 				imgui.BeginChild("##navigation", imgui.ImVec2(630, 41))
@@ -2685,8 +2906,10 @@ function main()
 				for index, value in pairs(t_mimgui_render) do
 					if value[0] then
 						if is_key_check then
-							was_found_active_menu = true
-							if t_mimgui_render[index][0] then t_mimgui_render[index][0] = not t_mimgui_render[index][0] end
+							if index ~= "patrol_bar" then
+								was_found_active_menu = true
+								if t_mimgui_render[index][0] then t_mimgui_render[index][0] = not t_mimgui_render[index][0] end
+							end
 						end
 					end
 				end
@@ -2721,7 +2944,9 @@ function main()
 						if not t_mimgui_render["quick_menu"][0] then
 							local was_found_active_menu = false
 							for index, value in pairs(t_mimgui_render) do
-								if value[0] then was_found_active_menu = true end
+								if index ~= "patrol_bar" then
+									if value[0] then was_found_active_menu = true end
+								end
 							end
 							t_mimgui_render["quick_menu"][0] = not was_found_active_menu
 						else
@@ -2822,6 +3047,14 @@ function main()
 						end
 					end
 				end
+			elseif wparam == vkeys.VK_B then
+				if isKeyCheckAvailable() then
+					if msg == 0x100 then
+						global_samp_cursor_status = true
+					elseif msg == 0x101 then
+						global_samp_cursor_status = false
+					end
+				end
 			end
 		end
 	end)
@@ -2868,7 +3101,17 @@ function main()
 				end
 			end
 		end
-	
+		
+		if global_samp_cursor_status then
+			sampSetCursorMode(3)
+			destroy_samp_cursor = false
+		else
+			if not destroy_samp_cursor then
+				sampSetCursorMode(0)
+				destroy_samp_cursor = true
+			end
+		end
+		
         if pricel then memory.write(12 + 12006488, 2, 128, false) end
 		
 		if isKeyDown(VK_RBUTTON) then
@@ -3359,7 +3602,6 @@ end
 
 function th_smart_suspects()
 	local font = renderCreateFont("tahoma", 8, font_flag.BOLD + font_flag.SHADOW)
-	local cursor_status = false
 	
 	local crimes_configuration = configuration["MAIN"]["quick_criminal_code"]
 
@@ -3468,17 +3710,11 @@ function th_smart_suspects()
 			local x, y = configuration["MAIN"]["settings"]["tq_interface_x"], configuration["MAIN"]["settings"]["tq_interface_y"]
 			local mx, my = getCursorPos()
 			
-			if cursor_status then
-				if not isKeyDown(VK_B) then sampSetCursorMode(0) cursor_status = false end
-			else
-				if isKeyDown(VK_B) then sampSetCursorMode(3) cursor_status = true end
-			end
-			
 			for index, value in ipairs(t_smart_suspects) do
 				if isPlayerConnected(value["suspect"]["id"]) then
 					for key, violation in ipairs(value["alleged_violations"]) do
 						if os.clock() - violation["clock"] < possible_crimes[violation["crimes"]]["clock"] then
-							local hovered = cursor_status and ((mx >= x and mx <= x + violation["fix"]) and (my >= y and my <= y + 40)) or false
+							local hovered = global_samp_cursor_status and ((mx >= x and mx <= x + violation["fix"]) and (my >= y and my <= y + 40)) or false
 						
 							renderDrawBox(x, y, violation["fix"], 40, hovered and 0xAC212121 or 0xF0212121)
 							renderDrawBox(x - 5, y + 2, 3, 36, value["suspect"]["visual_contact"] and value["suspect"]["color"] or 0xFFFFFFFF)
@@ -3522,8 +3758,6 @@ function th_smart_suspects()
 					table.remove(t_smart_suspects, index)
 				end
 			end
-		else
-			if cursor_status then sampSetCursorMode(0) cursor_status = false end
 		end
 	end 
 end
@@ -3590,10 +3824,24 @@ end
 
 function command_r(text)
 	if not string.match(text, "(%S+)") then chat_error("Введите необходимые параметры для /r [текст].") return end
-	local mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"]) 
-	for codes, value in pairs(abbreviated_codes) do
-		if text == codes then text = string.gsub(text, codes, value[1]) end
+	
+	local mark = ""
+	if patrol_status["mark"] then
+		mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
+	else
+		local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+		local player_nickname = sampGetPlayerName(player_id)
+		local first_name, second_name = string.match(tostring(player_nickname), "(%S+)_(%S+)")
+		mark = string.format("%s.%s", string.sub(first_name, 1, 1), second_name)
 	end
+	
+	for index, value in ipairs(abbreviated_codes) do
+		if text == value[1] then 
+			text = string.gsub(text, value[1], value[2]) 
+			value[3]()
+		end
+	end
+	
 	local text = string.gsub(text, "$m", mark)
 	local text = string.gsub(text, "$p", calculateZone())
 	sampSendChat(string.format("/r %s %s", configuration["MAIN"]["information"]["rtag"], text))
@@ -3601,12 +3849,27 @@ end
 
 function command_f(text)
 	if not string.match(text, "(%S+)") then chat_error("Введите необходимые параметры для /f (1 или 2) [текст].") return end
+	
 	local is_radio_type
 	if string.match(text, "^[1?2] (%S+)") then is_radio_type, text = string.match(text, "^(%d) (.+)") end
-	local mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
-	for codes, value in pairs(abbreviated_codes) do
-		if text == codes then text = string.gsub(text, codes, value[1]) end
+	
+	local mark = ""
+	if patrol_status["mark"] then
+		mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
+	else
+		local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+		local player_nickname = sampGetPlayerName(player_id)
+		local first_name, second_name = string.match(tostring(player_nickname), "(%S+)_(%S+)")
+		mark = string.format("%s.%s", string.sub(first_name, 1, 1), second_name)
 	end
+	
+	for index, value in ipairs(abbreviated_codes) do
+		if text == value[1] then 
+			text = string.gsub(text, value[1], value[2]) 
+			value[3]()
+		end
+	end
+	
 	local text = string.gsub(text, "$m", mark)
 	local text = string.gsub(text, "$p", calculateZone())
 	sampSendChat(string.format("/f %s%s %s", (is_radio_type and string.format("%s ", is_radio_type) or ""), configuration["MAIN"]["information"]["ftag"], text))
@@ -3632,8 +3895,8 @@ end
 
 function command_rtag()
 	local text = "{e6e6fa}Код\t\t{00CC66}Маркировка{e6e6fa}, {FFCD00}местоположение{e6e6fa} и содержание."
-	for index, value in pairs(abbreviated_codes) do
-		text = string.format("%s\n{FFCD00}%s{e6e6fa}\t\t%s", text, index, value[1])
+	for index, value in ipairs(abbreviated_codes) do
+		text = string.format("%s\n{FFCD00}%s{e6e6fa}\t\t%s", text, value[1], value[2])
 	end
 	local text = string.gsub(text, "%$m", "{00CC66}" .. sampGetMarkCharByVehicle(playerPed) .. "{e6e6fa}")
 	local text = string.gsub(text, "%$p", string.format("{FFCD00}%s{e6e6fa}", calculateZone())) 
@@ -4253,14 +4516,18 @@ function command_megafon()
 			local normal_vehicleId = vehicleId - 399
 			local nickname = sampGetPlayerName(player_id)
 			sampSendChat(string.format("/m Внимание, водитель %s %s с госномером #SA-%s.", tf_vehicle_type_name[1][t_vehicle_type[normal_vehicleId]], t_vehicle_name[normal_vehicleId], player_id))
-			wait(1500)
+			wait(1000)
 			sampSendChat("/m Немедленно остановите ваше транспортное средство и прижмитесь к обочине.") 
 			if t_last_requirement["nickname"] == nickname then
 				wait(1000)
 				sampSendChat("/m В случае неподчинения будет открыт огонь по колёсам и обшивке транспорта.")
 				if configuration["MAIN"]["settings"]["chase_message"] then
 					wait(1000)
-					command_r(string.format("Говорит $m, веду погоню за %s %s с госномером #SA-%s. Находимся в районе %s, CODE 3, недоступен.", tf_vehicle_type_name[2][t_vehicle_type[normal_vehicleId]], t_vehicle_name[normal_vehicleId], player_id, calculateZone()))
+					if global_radio == "r" then
+						command_r(string.format("Говорит $m, веду погоню за %s %s с госномером #SA-%s. Находимся в районе %s, CODE 3, недоступен.", tf_vehicle_type_name[2][t_vehicle_type[normal_vehicleId]], t_vehicle_name[normal_vehicleId], player_id, calculateZone()))
+					else
+						command_f(string.format("Говорит $m, веду погоню за %s %s с госномером #SA-%s. Находимся в районе %s, CODE 3, недоступен.", tf_vehicle_type_name[2][t_vehicle_type[normal_vehicleId]], t_vehicle_name[normal_vehicleId], player_id, calculateZone()))
+					end
 				end
 			end t_last_requirement = {nickname = nickname, player_id = player_id}
 			
@@ -4976,6 +5243,22 @@ function command_medhelp(parametrs)
 		else chat("Данный игрок не подключён к серверу, проверьте правильность введёного ID.") end
 	else chat_error("Введите необходимые параметры для /medhelp [id игрока] [стоимость лечения].") end
 end
+
+function command_tracker(parametrs)
+	if string.match(parametrs, "^(%d+) (%d)$") then
+		local id, stars = string.match(parametrs, "^(%d+) (%d)$")
+		if isPlayerConnected(id) then
+			if sampGetDistanceToPlayer(id) < 50 then 
+				lua_thread.create(function()
+					local male = configuration["MAIN"]["information"]["sex"] and "female" or "male"
+					local acting = configuration["CUSTOM"]["SYSTEM"][male]["tracker"]["variations"]
+					local acting = acting[math.random(1, #acting)]
+					final_command_handler(acting, {id, stars})
+				end)
+			else chat("Данный игрок находится слишком далеко от Вас.") end
+		else chat("Данный игрок не подключён к серверу, проверьте правильность введёного ID.") end
+	else chat_error("Введите необходимые параметры для /tracker [id игрока] [уровень розыска].") end
+end
 -- !callback
 
 -- function 
@@ -5148,29 +5431,8 @@ function final_command_handler(array, parametrs_block, profile, command)
 end
 
 function line_handler(input, parametrs_block)
-	local tags = {
-		["{greeting}"] = greeting_depending_on_the_time(),
-		["{name}"] = u8:decode(configuration["MAIN"]["information"]["name"]),
-		["{rang}"] = u8:decode(configuration["MAIN"]["information"]["rang"]),
-		["{fraction}"] = u8:decode(configuration["MAIN"]["information"]["fraction"]),
-		["{number}"] = u8:decode(configuration["MAIN"]["information"]["number"]),
-		["{targeting}"] = targeting_player,
-		["{suspect}"] = t_smart_suspects[1] and t_smart_suspects[1]["player_id"] or "-1",
-		["{date}"] = os.date("%d.%m.%Y"),
-		["{day}"] = os.date("%d"),
-		["{month}"] = os.date("%m"),
-		["{year}"] = os.date("%y"),
-		["{year4}"] = os.date("%Y"),
-		["{day_of_week}"] = os.date("%A"),
-		["{time}"] = os.date("%H:%M:%S"),
-		["{hour}"] = os.date("%H"),
-		["{minute}"] = os.date("%M"),
-		["{second}"] = os.date("%S"),
-		["{last_number}"] = tostring(last_sms_number)
- 	}
-
-	for tag, value in pairs(tags) do
-		if string.match(input, tag) then input = string.gsub(input, tag, value) end
+	for index, value in ipairs(handler_tags) do
+		if string.match(input, value[1]) then input = string.gsub(input, value[1], value[2]) end
 	end
 	
 	for value in string.gmatch(input, "{(%d)}") do
@@ -5204,7 +5466,7 @@ function greeting_depending_on_the_time()
 	else return "Здравствуйте" end
 end
 
-function sampGetMarkCharByVehicle(ped) -- "L (Lincoln)", "A (Adam)", "M (Merry)", "C (Charley)", "D (David)", "H (Henry)"
+function sampGetMarkCharByVehicle(ped) -- "L (Lincoln)", "A (Adam)", "M (Mary)", "C (Charley)", "D (David)", "H (Henry)"
 	if isCharSittingInAnyCar(ped) then
 		local vehicle = storeCarCharIsInNoSave(ped)
 			
@@ -5660,12 +5922,14 @@ function calculateZone(x, y, z)
     {"Las Venturas", 869.461, 596.349, -242.990, 2997.060, 2993.870, 900.000},
     {"Red County", -1213.910, -768.027, -242.990, 2997.060, 596.349, 900.000}, 
     {"Los Santos", 44.615, -2892.970, -242.990, 2997.060, -768.027, 900.000}}
+	
     for i, v in ipairs(streets) do
         if (x >= v[2]) and (y >= v[3]) and (z >= v[4]) and (x <= v[5]) and (y <= v[6]) and (z <= v[7]) then
             return v[1]
         end
     end
-    return "Unknown"
+	
+    return "Неизвестно"
 end
 
 function patch_samp_time_set(enable)
@@ -6475,6 +6739,37 @@ function register_custom_command(command, index, value)
 	end
 end
 
+function patrol_direction()
+    if sampIsLocalPlayerSpawned() then
+        local angel = math.ceil(getCharHeading(PLAYER_PED))
+        if angel then
+            if (angel >= 0 and angel <= 30) or (angel <= 360 and angel >= 330) then
+                return "Север", angel
+            elseif (angel > 80 and angel < 100) then
+                    return "Запад", angel
+            elseif (angel > 260 and angel < 280) then
+                    return "Восток", angel
+            elseif (angel >= 170 and angel <= 190) then
+                    return "Юг", angel
+            elseif (angel >= 31 and angel <= 79) then
+                    return "Северо-запад", angel
+            elseif (angel >= 191 and angel <= 259) then
+                    return "Юго-восток", angel
+            elseif (angel >= 81 and angel <= 169) then
+                    return "Юго-запад", angel
+            elseif (angel >= 259 and angel <= 329) then
+                    return "Северо-восток", angel
+            else
+                return "Неизвестно", angel
+            end
+        else
+            return "Неизвестно", 0
+        end
+    else
+        return "Неизвестно", 0
+    end
+end
+
 function submenus_show(menu, caption, select_button, close_button, back_button)
     select_button, close_button, back_button = select_button or 'Select', close_button or 'Close', back_button or 'Back'
     prev_menus = {}
@@ -6700,8 +6995,8 @@ function sampev.onServerMessage(color, text)
 			end
 		end
 		
-		if configuration["MAIN"]["settings"]["aid_timer"] then
-			if string.match(text, "Вы использовали аптечку. Здоровье пополнено на 60 единиц") then
+		if string.match(text, "Вы использовали аптечку. Здоровье пополнено на 60 единиц") then
+			if configuration["MAIN"]["settings"]["aid_timer"] then
 				local is_player_use_aidkit = false
 			
 				for index, value in ipairs(t_player_text) do
@@ -6714,6 +7009,18 @@ function sampev.onServerMessage(color, text)
 					table.insert(t_player_text, { ["type"] = 1, ["clock"] = os.clock() })
 				end
 			end
+			
+			--[[
+			local sex = configuration["MAIN"]["settings"]["sex"] and "female" or "male"
+				
+			if configuration["CUSTOM"]["LOW_ACTION"][sex]["healme"]["status"] then
+				lua_thread.create(function() wait(10)
+					local acting = configuration["CUSTOM"]["LOW_ACTION"][sex]["healme"]["variations"]
+					local acting = acting[math.random(1, #acting)]
+					final_command_handler(acting, {})
+				end)
+			end
+			--]]
 		end
 		
 		if string.match(text, "Вы объявили (%S+) в розыск%. Причина: (.+)%. Текущий уровень розыска (%d+)") then
@@ -6884,6 +7191,11 @@ function sampev.onServerMessage(color, text)
 				t_last_suspect_parametrs = false
 				return true
 			end
+		end
+	elseif color == 13434879 then
+		if string.match(text, "^(%S+) обратился в полицию%. {.+}..to (%d+). для принятия вызова$") then
+			local player_nickname, player_id = string.match(text, "^(%S+) обратился в полицию%. {.+}..to (%d+). для принятия вызова$")
+			t_accept_police_call = { ["nickname"] = player_nickname, ["id"] = player_id }
 		end
 	end
 	
@@ -7330,9 +7642,15 @@ function sampev.onSendCommand(parametrs)
 		if value and maximum_number_of_characters[command] then
 			if maximum_number_of_characters[command] < string.len(value) then
 				if not last_on_send_value then 
-					last_on_send_value = value 
+					last_on_send_value = { value, command }
 				else
-					if last_on_send_value == value then return false else last_on_send_value = value end
+					if last_on_send_value[1] == value and last_on_send_value[2] == command then 
+						last_on_send_value = false
+						chat("Повторный ввод однотипного содержания был заблокирован.")
+						return false 
+					else 
+						last_on_send_value = { value, command }
+					end
 				end
 			 
 				if command == "me" then
@@ -7395,12 +7713,36 @@ function sampev.onSetPlayerColor(player_id, color)
 				configuration["STATISTICS"]["number_masks_used"] = configuration["STATISTICS"]["number_masks_used"] + 1
 				if not need_update_configuration then need_update_configuration = os.clock() end
 				table.insert(t_player_text, { ["type"] = 2, ["clock"] = os.clock() })
+				
+				--[[
+				local sex = configuration["MAIN"]["settings"]["sex"] and "female" or "male"
+				
+				if configuration["CUSTOM"]["LOW_ACTION"][sex]["mask"]["status"] then
+					lua_thread.create(function() wait(10)
+						local acting = configuration["CUSTOM"]["LOW_ACTION"][sex]["mask"]["variations"]
+						local acting = acting[math.random(1, #acting)]
+						final_command_handler(acting, {})
+					end)
+				end
+				--]]
 			else
 				for index, value in ipairs(t_player_text) do
 					if value and value["type"] == 2 then
 						configuration["STATISTICS"]["time_using_mask"] = configuration["STATISTICS"]["time_using_mask"] + (os.clock() - value["clock"])
 						if not need_update_configuration then need_update_configuration = os.clock() end
 						table.remove(t_player_text, index)
+						
+						--[[
+						local sex = configuration["MAIN"]["settings"]["sex"] and "female" or "male"
+				
+						if configuration["CUSTOM"]["LOW_ACTION"][sex]["unmask"]["status"] then
+							lua_thread.create(function() wait(10)
+								local acting = configuration["CUSTOM"]["LOW_ACTION"][sex]["unmask"]["variations"]
+								local acting = acting[math.random(1, #acting)]
+								final_command_handler(acting, {})
+							end)
+						end
+						--]]
 					end
 				end
 			end
@@ -7551,7 +7893,7 @@ function sampev.onSendEnterVehicle(vehicle_id, passenger)
 	if not patrol_status["status"] then
 		local result, handle = sampGetCarHandleBySampVehicleId(vehicle_id)
 		if result and not passenger then
-			local vehicle = "-596-597-598-599-601-427-528-415-523-"
+			local vehicle = "-596-597-598-599-601-427-528-415-523-490-"
 			if string.match(vehicle, "%-" .. getCarModel(handle) .. "%-") then
 				chat("Если вы желаете активировать патрульного ассистента нажмите {HEX}Y{} или введите {HEX}/patrol{}.")
 				t_accept_the_offer = {2, os.clock()}
@@ -7599,7 +7941,7 @@ function sampev.onSetRaceCheckpoint(ltype, position, next_position, size)
 	end
 end
 
-function onReceiveRpc(id, bs)
+function onReceiveRpc(id, bs) -- fix FT
     if id == 91 then
 		if isCharSittingInAnyCar(playerPed) then
 			local vehicle_handle = storeCarCharIsInNoSave(playerPed)
@@ -7612,7 +7954,7 @@ function onReceiveRpc(id, bs)
 				local distance = math.abs(math.sqrt(t_rpc_coordinates["x"] ^ 2 + t_rpc_coordinates["y"] ^ 2 + t_rpc_coordinates["z"] ^ 2))
 				local vehicle_vectorX, vehicle_vectorY, vehicle_vectorZ = getCarSpeedVector(vehicle_handle)
 				
-				local angle = 8
+				local angle = 5
 				
 				if vehicle_vectorX ~= 0 and vehicle_vectorY ~= 0 and vehicle_vectorZ ~= 0 then
 					local f_angle = math.deg(math.atan2(vehicle_vectorY - t_rpc_coordinates["y"], vehicle_vectorX - t_rpc_coordinates["x"]))
