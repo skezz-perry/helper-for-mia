@@ -2465,13 +2465,6 @@ function()
 					imgui.TreePop()
 				end
 			end
-		elseif main_menu_navigation["current"] == 4 then
-			imgui.InputTextWithHint("##fd", "", string_found, 50)
-			for k, v in pairs(faicons) do
-				if string.match(string.lower(k), string.lower(str(string_found))) then
-					if imgui.Button(string.format("%s %s", k, v)) then setClipboardText(k) end
-				end
-			end
 		elseif main_menu_navigation["current"] == 5 then
 			if binder_menu_navigation["current"] == 4 then
 				imgui.BeginChild("##navigation", imgui.ImVec2(630, 41))
