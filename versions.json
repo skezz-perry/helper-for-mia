@@ -11,7 +11,7 @@
   },
   "USERS": {
     "index": "Пользователи",
-    "version": "3",
+    "version": "4",
     "url": "https://raw.githubusercontent.com/skezz-perry/helper-for-mia/main/users.json"
   }
 }
