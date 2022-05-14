@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.1")
+script_version("0.4.1.1")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require 
@@ -1188,6 +1188,12 @@ local ti_low_action = {
 
 -- global value 
 local update_log = {
+	{
+		"hotfix 0.4.1.1",
+		{
+			u8"Исправлены мелкие баги."
+		}
+	},
 	{
 		"version 0.4.1",
 		{
@@ -3294,6 +3300,7 @@ function main()
 							if flymode then
 								lockPlayerControl(true)
 								local x, y, z = getActiveCameraCoordinates()
+								
 								setFixedCameraPosition(x, y, z, 0.0, 0.0, 0.0)
 								camera = {
 									["origin"] = {x = x, y = y, z = z},
@@ -3918,7 +3925,7 @@ function th_helper_assistant()
 										else
 											if os.clock() - t_smart_vehicle["fuel"]["last_notification"] > 180 then
 												chat("Уровень топлива в вашем транспортом средстве {HEX}менее 30 литров{}.")
-												chat("Чтобы найти ближайщую АЗС используйте команду {HEX}/fuels{}.")
+												chat("Чтобы найти ближайщую АЗС используйте команду {HEX}/fuel{}.")
 												t_smart_vehicle["fuel"]["last_notification"] = os.clock()
 											end
 										end
@@ -7344,21 +7351,20 @@ function sampev.onServerMessage(color, text)
 			end
 		elseif string.match(text, "^(.+) (%S+) изъял у (%S+) (.+)$") then -- take weapon
 			local officer_rang, officer_nickname, suspect_nickname, weapon = string.match(text, "^(.+) (%S+) изъял у (%S+) (.+)$")
-			
-			handler_low_action("weapons", { weapon })
-
 			local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
 			if officer_nickname == sampGetPlayerName(player_id) then
-				local index_weapon = string.gsub(weapon, " ", "_")
-				configuration["STATISTICS"]["police"]["weapons_number"] = configuration["STATISTICS"]["police"]["weapons_number"] + 1
-				if not configuration["STATISTICS"]["police"]["weapons"] then configuration["STATISTICS"]["police"]["weapons"] = {} end
-				if not configuration["STATISTICS"]["police"]["weapons"][index_weapon] then
-					configuration["STATISTICS"]["police"]["weapons"][index_weapon] = 1
-				else
-					configuration["STATISTICS"]["police"]["weapons"][index_weapon] = configuration["STATISTICS"]["police"]["weapons"][index_weapon] + 1
-				end
-				if not need_update_configuration then need_update_configuration = os.clock() end
+				handler_low_action("weapons", { weapon }) 
 			end
+			
+			local index_weapon = string.gsub(weapon, " ", "_")
+			configuration["STATISTICS"]["police"]["weapons_number"] = configuration["STATISTICS"]["police"]["weapons_number"] + 1
+			if not configuration["STATISTICS"]["police"]["weapons"] then configuration["STATISTICS"]["police"]["weapons"] = {} end
+			if not configuration["STATISTICS"]["police"]["weapons"][index_weapon] then
+				configuration["STATISTICS"]["police"]["weapons"][index_weapon] = 1
+			else
+				configuration["STATISTICS"]["police"]["weapons"][index_weapon] = configuration["STATISTICS"]["police"]["weapons"][index_weapon] + 1
+			end
+			if not need_update_configuration then need_update_configuration = os.clock() end
 		elseif string.match(text, "^(.+) (%S+) произвёл обыск у (%S+)$") then -- search
 			local officer_rang, officer_nickname, suspect_nickname = string.match(text, "^(.+) (%S+) произвёл обыск у (%S+)$")
 			
