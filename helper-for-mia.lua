@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.2")
+script_version("0.4.3")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
@@ -1046,11 +1046,11 @@ local configuration = {
 					{ ["title"] = "SEARCH", ["callback"] = "command_search"}
 				},
 				["quick_criminal_code"] = {
-					["attack_officer"] = { ["stars"] = 5, ["reason"] = u8"ч.1 ст.3 УК" },
-					["attack_civil"] = { ["stars"] = 5, ["reason"] = u8"ч.1 ст.3 УК" },
-					["insubordination"] = { ["stars"] = 4, ["reason"] = u8"ч.2 ст.31 УК" },
-					["escape"] = { ["stars"] = 4, ["reason"] = u8"ч.3 ст.31 УК" },
-					["non_payment"] = { ["stars"] = 3, ["reason"] = u8"ч.1 ст.25 УК" }
+					["attack_officer"] = { ["stars"] = 5, ["reason"] = u8"3.1 УК" },
+					["attack_civil"] = { ["stars"] = 5, ["reason"] = u8"3.1 УК" },
+					["insubordination"] = { ["stars"] = 4, ["reason"] = u8"31.2 УК" },
+					["escape"] = { ["stars"] = 4, ["reason"] = u8"31.3 УК" },
+					["non_payment"] = { ["stars"] = 3, ["reason"] = u8"25.1 УК" }
 				},
 				["obtaining_weapons"] = {
 					["ballistic_shield"] = false,
@@ -1188,13 +1188,20 @@ local ti_low_action = {
 -- global value
 local update_log = {
 	{
+		"version 0.4.3",
+		{
+			u8"Для отыгровки оглушения добавлены тэги {1} и {2}: id и nickname, соответственно.",
+			u8"Теперь объявления от СМИ идут в общий реестр (/helper_ads).",
+			u8"Изменён интерфейс редактора объявлений (/edit).",
+		}
+	},
+	{
 		"version 0.4.2",
 		{
 			u8"Добавлена возможность редактировать статьи, используемые в быстром розыске:",
 			u8"Выберите в /uk нужную вам статью, нажмите на неё и выберите подходящее преступление.",
 			"",
 			u8"Добавлен список тэгов и функций для биндера.",
-			u8"Изменён формат статей кодексов на ч.N ст.N.",
 			u8"Добавлена возможность включать пользовательские команды в быстрое меню.",
 			u8"Исправлена ошибка при отыгровке скрытия оружия."
 		}
@@ -1979,107 +1986,116 @@ end)
 imgui.OnFrame(function() return t_mimgui_render["editor_ads"][0] end, -- редактор объявлений СМИ
 function(player)
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-	imgui.SetNextWindowSize(imgui.ImVec2(530, 360))
+	imgui.SetNextWindowSize(imgui.ImVec2(460, 277))
 	imgui.Begin(string.format("%s##7", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		local input = t_quick_ads["ad"]
+ 
+		imgui.BeginChild("##author_and_ads", imgui.ImVec2(440, 57))
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.CustomButton(u8"Объявление от")
+			imgui.SameLine(nil, 5) -- same 
+			imgui.Button(t_quick_ads["author"])
 
-		imgui.CustomButton(u8"ОТПРАВИТЕЛЬ", imgui.ImVec2(87, 20)) imgui.SameLine()
-		imgui.Button(u8(t_quick_ads["author"]))
-		imgui.CustomButton(u8"СОДЕРЖАНИЕ", imgui.ImVec2(87, 20)) imgui.SameLine()
-		imgui.Button(u8(input))
+			imgui.SetCursorPosX(5) -- fix X
+			imgui.CustomButton(u8(input))
+		imgui.EndChild()
 
-		imgui.NewLine()
+		imgui.BeginChild("##editor_ads", imgui.ImVec2(440, 57))
+		imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.PushItemWidth(430)
+			imgui.InputTextWithHint("##editorads", u8"Отредактированная версия объявления", imgui_editor_ads, 500)
 
-		imgui.PushItemWidth(510)
-		imgui.InputTextWithHint("##editorads", u8"Редактированная версия объявления", imgui_editor_ads, 500)
+			imgui.SetCursorPosX(9) -- fix X
+			if imgui.Button(u8"Принять") then
+				sampSendDialogResponse(t_quick_ads["dialog_id"], 1, 0, u8:decode(str(imgui_editor_ads)))
 
-		if imgui.Button(u8"Принять", imgui.ImVec2(82, 20)) then
-			sampSendDialogResponse(t_quick_ads["dialog_id"], 1, 0, u8:decode(str(imgui_editor_ads)))
+				table.insert(configuration["ADS"], {
+					received_ad = u8(t_quick_ads["ad"]), corrected_ad = str(imgui_editor_ads), author = t_quick_ads["author"],
+					button = 1, start_of_verification = t_quick_ads["time"], finish_of_verification = os.time()
+				})
 
-			table.insert(configuration["ADS"], {
-				received_ad = u8(t_quick_ads["ad"]), corrected_ad = str(imgui_editor_ads), author = t_quick_ads["author"],
-				button = 1, start_of_verification = t_quick_ads["time"], finish_of_verification = os.time()
-			})
+				if not need_update_configuration then need_update_configuration = os.clock() end
 
-			if not need_update_configuration then need_update_configuration = os.clock() end
+				t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
+			end imgui.SameLine()
 
-			t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
-		end imgui.SameLine()
+			if imgui.Button(u8"Отклонить") then
+				sampSendDialogResponse(t_quick_ads["dialog_id"], 0, 0, u8:decode(str(imgui_editor_ads)))
 
-		if imgui.Button(u8"Отклонить", imgui.ImVec2(83, 20)) then
-			sampSendDialogResponse(t_quick_ads["dialog_id"], 0, 0, u8:decode(str(imgui_editor_ads)))
+				table.insert(configuration["ADS"], {
+					received_ad = u8(t_quick_ads["ad"]), corrected_ad = str(imgui_editor_ads), author = t_quick_ads["author"],
+					button = 0, start_of_verification = t_quick_ads["time"], finish_of_verification = os.time()
+				})
 
-			table.insert(configuration["ADS"], {
-				received_ad = u8(t_quick_ads["ad"]), corrected_ad = str(imgui_editor_ads), author = t_quick_ads["author"],
-				button = 0, start_of_verification = t_quick_ads["time"], finish_of_verification = os.time()
-			})
+				if not need_update_configuration then need_update_configuration = os.clock() end
 
-			if not need_update_configuration then need_update_configuration = os.clock() end
+				t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
+			end imgui.SameLine()
 
-			t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
-		end imgui.SameLine()
+			if imgui.Button(u8"Перенести в поле редактора") then
+				imgui_editor_ads = new.char[256](u8(input))
+			end imgui.SameLine()
 
-		if imgui.Button(u8"Перенести в поле редактора", imgui.ImVec2(185, 20)) then
-			imgui_editor_ads = new.char[256](u8(input))
-		end imgui.SameLine()
-
-		if imgui.Button(u8"Speller", imgui.ImVec2(130, 20)) then
-			local result = command_speller(u8:decode(str(imgui_editor_ads)))
-			if result and table.maxn(result) > 0 then
-				local ad = str(imgui_editor_ads)
-				for index, value in ipairs(result) do ad = string.gsub(ad, value[1], value[2]) end
-				imgui_editor_ads = new.char[256](ad)
-			end
-		end
-
-		imgui.NewLine()
-
-		imgui.PushItemWidth(510)
-		if imgui.InputTextWithHint("##quickeditorads", u8"Поиск похожего объявления в реестре", imgui_quick_editor_ads, 500) or t_quick_editor_update then
-			local input_pattern = string.nlower(string.gsub(u8:decode(str(imgui_quick_editor_ads)), "%p+", ""))
-			local t_input_pattern = {}
-			for word in string.gmatch(input_pattern, "[^%s]+") do table.insert(t_input_pattern, word) end
-
-			local repeats = {}
-			local result = {}
-
-			local half_weights = {"прода", "купл", "цена", "бюдже", "свободн", "договор"}
-
-			for index = table.maxn(configuration["ADS"]), 1, -1 do
-				local received_ad = string.nlower(string.gsub(u8:decode(configuration["ADS"][index]["received_ad"]), "%p+", ""))
-				local corrected_ad = string.nlower(string.gsub(u8:decode(configuration["ADS"][index]["corrected_ad"]), "(%p+)?(%s+)", ""))
-				if not repeats[corrected_ad] then
-					local t_received_ad = {}
-					local matches = 0
-					for word in string.gmatch(received_ad, "[^%s]+") do
-						local is_word_have_half_weights = false
-						for k1, v1 in ipairs(half_weights) do
-							if string.match(word, v1) then is_word_have_half_weights = true end
-						end
-						table.insert(t_received_ad, { word, is_word_have_half_weights and 0.5 or 1 })
-					end
-
-					for k1, v1 in ipairs(t_input_pattern) do
-						for k2, v2 in ipairs(t_received_ad) do
-							if string.match(v2[1], v1) then
-								if string.len(v1) > 2 and string.len(v2[1]) > 2 then matches = matches + v2[2] end
-							end
-						end
-					end
-
-					repeats[corrected_ad] = true
-
-					if matches > 0 then table.insert(result, { index = index, matches = matches }) end
+			if imgui.Button(u8"Правописание") then
+				local result = command_speller(u8:decode(str(imgui_editor_ads)))
+				if result and table.maxn(result) > 0 then
+					local ad = str(imgui_editor_ads)
+					for index, value in ipairs(result) do ad = string.gsub(ad, value[1], value[2]) end
+					imgui_editor_ads = new.char[256](ad)
 				end
 			end
 
-			table.sort(result, function(a, b) return a["matches"] > b["matches"] end)
-			t_quick_editor_ads = result
-			t_quick_editor_update = nil
-		end
+			imgui.Hint("##speller", u8"Нажмите, чтобы проверить правильность написания слов.")
+		imgui.EndChild()
 
-		imgui.BeginChild("##main", imgui.ImVec2(510, 150))
+		imgui.BeginChild("##main", imgui.ImVec2(440, 110))
+			imgui.SetCursorPos(imgui.ImVec2(5, 5)) -- fix
+			imgui.PushItemWidth(430)
+			if imgui.InputTextWithHint("##quickeditorads", u8"Поиск похожего объявления в реестре", imgui_quick_editor_ads, 500) or t_quick_editor_update then
+				local input_pattern = string.nlower(string.gsub(u8:decode(str(imgui_quick_editor_ads)), "%p+", ""))
+				local t_input_pattern = {}
+				for word in string.gmatch(input_pattern, "[^%s]+") do table.insert(t_input_pattern, word) end
+
+				local repeats = {}
+				local result = {}
+
+				local half_weights = {"прода", "купл", "цена", "бюдже", "свободн", "договор"}
+
+				for index = table.maxn(configuration["ADS"]), 1, -1 do
+					local received_ad = string.nlower(string.gsub(u8:decode(configuration["ADS"][index]["received_ad"]), "%p+", ""))
+					local corrected_ad = string.nlower(string.gsub(u8:decode(configuration["ADS"][index]["corrected_ad"]), "(%p+)?(%s+)", ""))
+					if not repeats[corrected_ad] then
+						local t_received_ad = {}
+						local matches = 0
+						for word in string.gmatch(received_ad, "[^%s]+") do
+							local is_word_have_half_weights = false
+							for k1, v1 in ipairs(half_weights) do
+								if string.match(word, v1) then is_word_have_half_weights = true end
+							end
+							table.insert(t_received_ad, { word, is_word_have_half_weights and 0.5 or 1 })
+						end
+
+						for k1, v1 in ipairs(t_input_pattern) do
+							for k2, v2 in ipairs(t_received_ad) do
+								if string.match(v2[1], v1) then
+									if string.len(v1) > 2 and string.len(v2[1]) > 2 then matches = matches + v2[2] end
+								end
+							end
+						end
+
+						repeats[corrected_ad] = true
+
+						if matches > 0 then table.insert(result, { index = index, matches = matches }) end
+					end
+				end
+
+				table.sort(result, function(a, b) return a["matches"] > b["matches"] end)
+				t_quick_editor_ads = result
+				t_quick_editor_update = nil
+			end
+
 			for index, value in ipairs(t_quick_editor_ads) do
+				imgui.SetCursorPosX(5) -- fix X
 				if imgui.CustomButton(string.format("%s", configuration["ADS"][value["index"]]["corrected_ad"])) then
 					imgui_editor_ads = new.char[256](configuration["ADS"][value["index"]]["corrected_ad"])
 				end
@@ -2378,15 +2394,15 @@ function()
 							if imgui.Button(string.format("%s##b-%s-%s", button_punishment[lvalue["type_punishment"]], article, part)) then
 								if not viewing_documents then
 									if lvalue["type_punishment"] == 1 then
-										command_ticket(string.format("%s %s ч.%s ст.%s КоАП", smart_suspect_id, lvalue["value_punishment"], part, article))
+										command_ticket(string.format("%s %s %s.%s КоАП", smart_suspect_id, lvalue["value_punishment"], article, part))
 									elseif lvalue["type_punishment"] == 2 then
-										command_takelic(string.format("%s ч.%s ст.%s КоАП", smart_suspect_id, part, article))
+										command_takelic(string.format("%s %s.%s КоАП", smart_suspect_id, article, part))
 									elseif lvalue["type_punishment"] == 3 then
-										command_su(string.format("%s %s ч.%s ст.%s УК", smart_suspect_id, lvalue["value_punishment"], part, article))
+										command_su(string.format("%s %s %s.%s УК", smart_suspect_id, lvalue["value_punishment"], article, part))
 									end
 								else
 									if lvalue["type_punishment"] == 3 then
-										time_quick_suspect = { ["stars"] = lvalue["value_punishment"], ["reason"] = string.format(u8"ч.%s ст.%s УК", part, article) }
+										time_quick_suspect = { ["stars"] = lvalue["value_punishment"], ["reason"] = string.format(u8"%s.%s УК", article, part) }
 										t_mimgui_render["editor_quick_suspect"][0] = true
 									end
 								end
@@ -2395,15 +2411,15 @@ function()
 							if imgui.CustomButton(lvalue["treenode_part"]) then
 								if not viewing_documents then
 									if lvalue["type_punishment"] == 1 then
-										command_ticket(string.format("%s %s ч.%s ст.%s КоАП", smart_suspect_id, lvalue["value_punishment"], part, article))
+										command_ticket(string.format("%s %s %s.%s КоАП", smart_suspect_id, lvalue["value_punishment"], article, part))
 									elseif lvalue["type_punishment"] == 2 then
-										command_takelic(string.format("%s ч.%s ст.%s КоАП", smart_suspect_id, part, article))
+										command_takelic(string.format("%s %s.%s КоАП", smart_suspect_id, article, part))
 									elseif lvalue["type_punishment"] == 3 then
-										command_su(string.format("%s %s ч.%s ст.%s УК", smart_suspect_id, lvalue["value_punishment"], part, article))
+										command_su(string.format("%s %s %s.%s УК", smart_suspect_id, lvalue["value_punishment"], article, part))
 									end
 								else
 									if lvalue["type_punishment"] == 3 then
-										time_quick_suspect = { ["stars"] = lvalue["value_punishment"], ["reason"] = string.format(u8"ч.%s ст.%s УК", part, article) }
+										time_quick_suspect = { ["stars"] = lvalue["value_punishment"], ["reason"] = string.format(u8"%s.%s УК", article, part) }
 										t_mimgui_render["editor_quick_suspect"][0] = true
 									end
 								end
@@ -3349,15 +3365,15 @@ function main()
 			end
 		elseif msg == 0x100 or msg == 0x101 then
 			if wparam == vkeys.VK_ESCAPE then
-				local is_key_check = isKeyCheckAvailable()
 				local was_found_active_menu = false
-				for index, value in pairs(t_mimgui_render) do
-					if value[0] then
-						if is_key_check then
-							if index ~= "patrol_bar" then
-								was_found_active_menu = true
-								if t_mimgui_render[index][0] then 
-									t_mimgui_render[index][0] = false
+
+				if msg == 0x100 then
+					if isKeyCheckAvailable() then
+						for index, value in pairs(t_mimgui_render) do
+							if index ~= "patrol_bar" and index ~= "editor_ads" then
+								if value[0] then
+									was_found_active_menu = true
+									value[0] = false
 								end
 							end
 						end
@@ -3365,7 +3381,7 @@ function main()
 				end
 
 				if was_found_active_menu then
-					consumeWindowMessage(true, false)
+					consumeWindowMessage(true, true)
 				else
 					if not pause_start then
 						if isPauseMenuActive() then
@@ -4544,8 +4560,8 @@ function command_sms(parametrs)
 		if text and string.len(text) > 60 then
 			local result = string_pairs(text, 60)
 			local l1, l2 = result[1], result[2]
-			sampSendChat(string.format("/sms %d %s ...", number, l1))
-			sampSendChat(string.format("/sms %d ... %s", number, l2))
+			sampSendChat(string.format("/sms %d %s...", number, l1))
+			sampSendChat(string.format("/sms %d ...%s", number, l2))
 		else
 			sampSendChat(string.format("/sms %d %s", number, text))
 		end
@@ -4567,8 +4583,8 @@ function command_sms(parametrs)
 		if text and string.len(text) > 60 then
 			local result = string_pairs(text, 60)
 			local l1, l2 = result[1], result[2]
-			sampSendChat(string.format("/sms %d %s ...", number, l1))
-			sampSendChat(string.format("/sms %d ... %s", number, l2))
+			sampSendChat(string.format("/sms %d %s...", number, l1))
+			sampSendChat(string.format("/sms %d ...%s", number, l2))
 		else
 			sampSendChat(string.format("/sms %d %s", number, text))
 		end
@@ -4583,7 +4599,7 @@ function command_rec(parametrs)
 
 	if string.match(parametrs, "(%d+)") then
 		local delay = tonumber(parametrs)
-		if delay > 0 and delay <= 60 then
+		if delay >= 0 and delay <= 60 then
 			reconnect(delay)
 		else chat("Задержка между переподключениями не должна быть менее 0 и более 60 секунд.") end
 	else chat_error("Введите необходимые параметры для /rec [задержка].") end
@@ -4598,7 +4614,7 @@ function command_recn(parametrs)
 	if string.match(parametrs, "(%d+) (%S+)") then
 		local delay, name = string.match(parametrs, "(%d+) (.+)")
 		local delay = tonumber(delay)
-		if delay > 0 and delay <= 60 then
+		if delay >= 0 and delay <= 60 then
 			sampSetLocalPlayerName(name)
 			reconnect(delay)
 		else
@@ -5732,12 +5748,14 @@ function command_helper_ads(parametrs)
 					{ title = string.format("Отправлено\t%s", u8:decode(configuration["ADS"][value["index"]]["received_ad"])), onclick = function() end },
 					{ title = string.format("Отредактировано\t%s", u8:decode(configuration["ADS"][value["index"]]["corrected_ad"])), onclick = function() end },
 					{ title = string.format("Отправитель\t%s", configuration["ADS"][value["index"]]["author"] and configuration["ADS"][value["index"]]["author"] or "Неизвестно"), onclick = function() end },
-					{ title = string.format("Дата\t%s", configuration["ADS"][value["index"]]["time"] and os.date("%x, %X", configuration["ADS"][value["index"]]["time"]) or "Неизвестно"), onclick = function() end },
+					{ title = string.format("Дата\t%s", configuration["ADS"][value["index"]]["finish_of_verification"] and os.date("%x, %X", configuration["ADS"][value["index"]]["finish_of_verification"]) or "Неизвестно"), onclick = function() end },
 				}
 			})
 		end
 
 		lua_thread.create(function() submenus_show(dialog, "smart ad", "Подробнее", "Закрыть", "Назад") end)
+	else
+		chat_error("Введите необходимые параметры для /helper_ads [часть объявления].")
 	end
 end
 
@@ -7418,10 +7436,19 @@ end
 function sampev.onServerMessage(color, text)
 	if color == 13369599 then
 		if string.match(text, "(.+) %| Отправил%s(%S+)%[(%d+)%] %(тел%. (%d+)%)") then -- mass media ad
-			local ad, player_name, player_id, player_number = string.match(text, "(.+) %| Отправил%s(%S+)%[(%d+)%] %(тел%. (%d+)%)")
+			local ad, player_nickname, player_id, player_number = string.match(text, "(.+) %| Отправил%s(%S+)%[(%d+)%] %(тел%. (%d+)%)")
 
-			if not configuration["DATABASE"]["player"][player_name] then configuration["DATABASE"]["player"][player_name] = {} end
-			configuration["DATABASE"]["player"][player_name]["telephone"] = player_number
+			table.insert(configuration["ADS"], {
+				["author"] = player_nickname,
+				["button"] = 1,
+				["corrected_ad"] = u8(ad),
+				["received_ad"] = u8(ad),
+				["start_of_verification"] = os.time(),
+				["finish_of_verification"] = os.time()
+			})
+
+			if not configuration["DATABASE"]["player"][player_nickname] then configuration["DATABASE"]["player"][player_nickname] = {} end
+			configuration["DATABASE"]["player"][player_nickname]["telephone"] = player_number
 
 			if not need_update_configuration then need_update_configuration = os.clock() end
 			if configuration["MAIN"]["settings"]["ad_blocker"] then print(text) return false end
@@ -7561,13 +7588,16 @@ function sampev.onServerMessage(color, text)
 		end
 	elseif color == 865730559 then
 		if string.match(text, "Вы оглушили (%S+) на 15 секунд") then -- suspect taser
+			local player_nickname = string.match(text, "Вы оглушили (%S+) на 15 секунд")
+			local player_id = sampGetPlayerIdByNickname(player_nickname)
+
 			if getCurrentCharWeapon(playerPed) == 3 then
-				handler_low_action("baton")
+				handler_low_action("baton", { player_id, player_nickname })
 
 				configuration["STATISTICS"]["police"]["baton"] = configuration["STATISTICS"]["police"]["baton"] + 1
 				if not need_update_configuration then need_update_configuration = os.clock() end
 			else
-				handler_low_action("taser")
+				handler_low_action("taser", { player_id, player_nickname })
 
 				configuration["STATISTICS"]["police"]["taser"] = configuration["STATISTICS"]["police"]["taser"] + 1
 				if not need_update_configuration then need_update_configuration = os.clock() end
@@ -8199,9 +8229,9 @@ function sampev.onSendChat(text)
 		local result = string_pairs(text, 86)
 		for index, value in ipairs(result) do
 			if index == 1 then
-				sampSendChat(string.format("%s ...", value))
+				sampSendChat(string.format("%s...", value))
 			else
-				sampSendChat(string.format("... %s", value))
+				sampSendChat(string.format("...%s", value))
 			end
 		end
 		return false
@@ -8249,9 +8279,9 @@ function sampev.onSendCommand(parametrs)
 					local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 					for index, value in ipairs(result) do
 						if index == 1 then
-							sampSendChat(string.format("/me %s ...", value))
+							sampSendChat(string.format("/me %s...", value))
 						else
-							sampSendChat(string.format("/do ... %s", value))
+							sampSendChat(string.format("/do ...%s", value))
 						end
 					end
 				elseif command == "r" or command == "f" then
@@ -8267,18 +8297,18 @@ function sampev.onSendCommand(parametrs)
 
 						for index, value in ipairs(result) do
 							if index == 1 then
-								sampSendChat(string.format("/%s (( %s ... ))", command, value))
+								sampSendChat(string.format("/%s (( %s... ))", command, value))
 							else
-								sampSendChat(string.format("/%s (( ... %s ))", command, value))
+								sampSendChat(string.format("/%s (( ...%s ))", command, value))
 							end
 						end
 					else
 						local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 						for index, value in ipairs(result) do
 							if index == 1 then
-								sampSendChat(string.format("/%s %s ...", command, value))
+								sampSendChat(string.format("/%s %s...", command, value))
 							else
-								sampSendChat(string.format("/%s ... %s", command, value))
+								sampSendChat(string.format("/%s ...%s", command, value))
 							end
 						end
 					end
@@ -8286,9 +8316,9 @@ function sampev.onSendCommand(parametrs)
 					local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 					for index, value in ipairs(result) do
 						if index == 1 then
-							sampSendChat(string.format("/%s %s ...", command, value))
+							sampSendChat(string.format("/%s %s...", command, value))
 						else
-							sampSendChat(string.format("/%s ... %s", command, value))
+							sampSendChat(string.format("/%s ...%s", command, value))
 						end
 					end
 				end return false
@@ -8549,7 +8579,7 @@ function onScriptTerminate(script, bool)
 		for index, value in ipairs(t_map_marker) do
 			if value["marker"] then removeBlip(value["marker"]) end
 		end
-		if not is_script_exit then thisScript():reload() end
+		-- if not is_script_exit then thisScript():reload() end
 	end
 end
 -- !event
