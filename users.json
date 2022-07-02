@@ -1,7 +1,7 @@
 {
   "Wojciech_Kaczynski": {
     "color": "{e33434}",
-    "rang": "Создатель",
+    "rang": "Разработчик",
     "rangNumber": 4,
     "serialNumber": "2323311406 776753279 576856999",
     "user_slots_value": 100,
@@ -9,7 +9,7 @@
   },
   "Hikari_Tsutsui": {
     "color": "{e33434}",
-    "rang": "Пользователь",
+    "rang": "Модератор",
     "rangNumber": 3,
     "serialNumber": "352109051 2669911894",
     "user_slots_value": 100,
@@ -17,18 +17,10 @@
   },
   "Eddie_Redmayne": {
     "color": "{e33434}",
-    "rang": "Пользователь",
+    "rang": "Модератор",
     "rangNumber": 3,
     "serialNumber": "2354841773",
     "user_slots_value": 100,
-    "subscription": 2627203600
-  },
-  "Alisa_Belfort": {
-    "color": "{08FFF4}",
-    "rang": "Пользователь",
-    "rangNumber": 2,
-    "serialNumber": "4138088940",
-    "user_slots_value": 50,
     "subscription": 2627203600
   },
   "Andrea_Aviero": {
@@ -44,14 +36,6 @@
     "rang": "Пользователь",
     "rangNumber": 2,
     "serialNumber": "1574933021",
-    "user_slots_value": 50,
-    "subscription": 2627203600
-  },
-  "Alisa_Vitvinskaya": {
-    "color": "{61DEAB}",
-    "rang": "Пользователь",
-    "rangNumber": 2,
-    "serialNumber": "7777777777",
     "user_slots_value": 50,
     "subscription": 2627203600
   },
