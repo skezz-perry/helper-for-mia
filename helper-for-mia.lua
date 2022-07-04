@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.4")
+script_version("0.4.5")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
@@ -994,7 +994,8 @@ local configuration = {
 					["quick_lock_doors"] = true,
 					["normal_speedometer_update"] = true,
 					["low_fuel_level_notification"] = true,
-					["waiting_time_taking_weapons"] = 1
+					["waiting_time_taking_weapons"] = 1,
+					["fast_interaction"] = true
 				},
 				["role_play_weapons"] = {
 					["BRASSKNUCKLES"]    = { ["take"] = u8"", ["remove"] = u8 "" },
@@ -1080,6 +1081,17 @@ local configuration = {
 					["company"] = true,
 					["edit"] = true,
 					["shop"] = true
+				},
+				["characters_number"] = {
+					["chat"] = 90,
+					["me"] = 90,
+					["do"] = 75, 
+					["r"] = 80, 
+					["f"] = 80, 
+					["g"] = 80, 
+					["fm"] = 80, 
+					["m"] = 80, 
+					["t"] = 80
 				},
 				["blacklist"] = {},
 				["customization"] = {}
@@ -1194,6 +1206,20 @@ local ti_low_action = {
 
 -- global value
 local update_log = {
+	{
+		"version 0.4.5",
+		{
+			u8"Добавлена возможность быстрого взаимодействия (с транспортом) через выделение с помощью ПКМ.",
+			u8"Добавлена возможность отключения серверной анимации с помощью /anim 0 (79).",
+			u8"Добавлен редактор лимита переноса символов для отдельных чатов -> 5й пункт настроек.",
+			u8"Добавлена возможность отключить быстрое взаимодействие с сущностями (B) -> 2й пункт настроек.",
+			u8"Добавлены маркеры над выделенными сущностями (B) и на отметках на карте (локальное GPS).",
+			u8"Изменена чувствительность блокировщика однотипного содержания.",
+			u8"Изменена функциональная часть обработки многих внутренних потоков (производительность плюс).",
+			u8"Возможность просматривать некоторые списки ограничена для неверифицированных пользователей.",
+			u8"Исправлено мерцание при нажатии на пункт в быстром меню."
+		}
+	},
 	{
 		"version 0.4.4",
 		{
@@ -1504,6 +1530,7 @@ local global_radio = "r"
 local open_menu_map = false
 local player_status = 0
 local fast_reconnect = false
+local targeting_vehicle = false
 
 local t_mimgui_render = {
 	["main_menu"] = new.bool(false),
@@ -1548,7 +1575,7 @@ local t_patrol_status = {}
 local t_accept_the_offer
 local convert_patrol_list = {"Unit", "L", "A", "M", "C", "D", "H", "ASD", "SUPERVISOR"}
 local camera = {}
-local t_map_marker = {}
+local t_map_markers = {}
 local goverment_news = {}
 local quick_menu_list = {}
 local quick_tags_menu = {}
@@ -1576,6 +1603,8 @@ local t_smart_found_ads = {}
 local was_start_harvesting
 local t_quick_menu
 local last_send_command
+local t_static_time = { os.date("%H"), os.date("%M"), false }
+local t_entity_marker = {}
 
 local t_database_search = {
 	{ ["index"] = u8"Игроки", ["matches"] = 0, ["content"] = {} },
@@ -1635,6 +1664,18 @@ local t_automatic_receipt_weapons = {
 	{ ["index"] = "tear_gas",             ["description"] = u8"Слезоточивый газ",      ["path"] = { "MAIN", "obtaining_weapons", "tear_gas" } },
 	{ ["index"] = "sniper_rifle",         ["description"] = u8"Снайперская винтовка",  ["path"] = { "MAIN", "obtaining_weapons", "sniper_rifle" } },
 	-- { ["index"] = "ak47",                 ["description"] = u8"Автомат Калашникова",   ["path"] = { "MAIN", "obtaining_weapons", "ak47" } }
+}
+
+local t_limit_characters = {
+	{ ["index"] = "##chat", ["description1"] = u8"Обычный чат", ["description2"] = "chat", ["path"] = { "MAIN", "characters_number", "chat" } },
+	{ ["index"] = "##me",   ["description1"] = u8"RP-чат",      ["description2"] = "/me",  ["path"] = { "MAIN", "characters_number", "me" } },
+	{ ["index"] = "##do",   ["description1"] = u8"RP-чат",      ["description2"] = "/do",  ["path"] = { "MAIN", "characters_number", "do" } },
+	{ ["index"] = "##r",    ["description1"] = u8"Рация",       ["description2"] = "/r",   ["path"] = { "MAIN", "characters_number", "r" } },
+	{ ["index"] = "##f",    ["description1"] = u8"Общая волна", ["description2"] = "/f",   ["path"] = { "MAIN", "characters_number", "f" } },
+	{ ["index"] = "##g",    ["description1"] = u8"Чат группы",  ["description2"] = "/g",   ["path"] = { "MAIN", "characters_number", "g" } },
+	{ ["index"] = "##fm",   ["description1"] = u8"Чат семьи",   ["description2"] = "/fm",  ["path"] = { "MAIN", "characters_number", "fm" } },
+	{ ["index"] = "##m",    ["description1"] = u8"Мегафон",     ["description2"] = "/m",   ["path"] = { "MAIN", "characters_number", "m" } },
+	{ ["index"] = "##t",    ["description1"] = u8"Прямой эфир", ["description2"] = "/t",   ["path"] = { "MAIN", "characters_number", "t" } }
 }
 
 local t_role_play_weapons = {
@@ -1704,7 +1745,8 @@ local t_automatics_actions = {
 	{ ["index"] = "##passport_check",   ["description"] = u8"Автоматическая проверка документов (/pas)", ["path"] = { "MAIN", "settings", "passport_check" } },
 	{ ["index"] = "##auto_buy_mandh",   ["description"] = u8"Автоматическая покупка масок и аптечек",    ["path"] = { "MAIN", "settings", "auto_buy_mandh" } },
 	{ ["index"] = "##quick_open_door",  ["description"] = u8"Кнопки быстрого взаимодействия с дверьми",  ["path"] = { "MAIN", "settings", "quick_open_door" } },
-	{ ["index"] = "##quick_lock_doors", ["description"] = u8"Открытие дверей транспорта 'умным ключом'", ["path"] = { "MAIN", "settings", "quick_lock_doors" } }
+	{ ["index"] = "##quick_lock_doors", ["description"] = u8"Открытие дверей транспорта 'умным ключом'", ["path"] = { "MAIN", "settings", "quick_lock_doors" } },
+	{ ["index"] = "##fast_interaction", ["description"] = u8"Быстрое взаимодействие с сущностями (B)",   ["path"] = { "MAIN", "settings", "fast_interaction" } }
 }
 
 local t_transport_improvements = {
@@ -1934,7 +1976,7 @@ local t_points_completed_orders = {
 	["Округ Ред"] = {x = 1558.5964355469, y = 27.0146484375, z = 22}
 }
 
-local maximum_number_of_characters = {["me"] = 90, ["do"] = 75, ["r"] = 80, ["f"] = 80, ["g"] = 80, ["fm"] = 80, ["m"] = 80, ["t"] = 80}
+local maximum_number_of_characters = function() return configuration["MAIN"]["characters_number"] end
 local lcons = {}
 local w, h = getScreenResolution()
 local imgui_script_name = u8"всегда радуйтесь"
@@ -2543,7 +2585,7 @@ function()
 						local value = tostring(value)
 						if maximum_size < imgui.CalcTextSize(value).x then maximum_size = imgui.CalcTextSize(value).x end
 					end
-					update_log[index][3], update_log[index][4] = (maximum_size + 10), (19 * #version[2])
+					update_log[index][3], update_log[index][4] = (maximum_size + 10), (18 * #version[2] + 4)
 				end
 			end
 
@@ -2564,8 +2606,8 @@ function()
 		elseif main_menu_navigation["current"] == 2 then
 			imgui.BeginGroup()
 				imgui.BeginChild("##navigation", imgui.ImVec2(220, 41))
-					imgui.SetCursorPos(imgui.ImVec2(72, 15))
-					for index = 1, 4 do
+					imgui.SetCursorPos(imgui.ImVec2(62, 15))
+					for index = 1, 5 do
 						if im_circle_button("##nav-" .. index, (index == settings_menu_navigation["current"])) then
 							settings_menu_navigation["current"] = index
 						end if index ~= 5 then imgui.SameLine() end
@@ -2678,7 +2720,7 @@ function()
 								preliminary_check_suspect(player_id, 1, true, false)
 
 								while true do wait(0)
-									sampSetCursorMode(3)
+									if sampGetCursorMode() ~= 3 then sampSetCursorMode(3) end
 									configuration["MAIN"]["settings"]["tq_interface_x"], configuration["MAIN"]["settings"]["tq_interface_y"] = getCursorPos()
 									if wasKeyPressed(vkeys.VK_LBUTTON) then sampSetCursorMode(0) break end
 								end sampSetCursorMode(0)
@@ -2709,7 +2751,7 @@ function()
 					imgui.EndChild()
 
 					imgui.SetCursorPosY(253) -- fix Y
-					imgui.BeginChild("##t_automatics_actions", imgui.ImVec2(325, 100))
+					imgui.BeginChild("##t_automatics_actions", imgui.ImVec2(325, 123))
 						for index, value in ipairs(t_automatics_actions) do
 							imgui.SetCursorPos(imgui.ImVec2(5, (6 + 23 * (index - 1))))
 							im_toggle_button(value["index"], value["description"], value["path"])
@@ -2860,6 +2902,33 @@ function()
 							im_update_color()
 						end
 					imgui.EndGroup()
+				imgui.EndChild()
+			elseif settings_menu_navigation["current"] == 5 then
+				imgui.SetCursorPosY(118) -- fix Y
+
+				imgui.BeginChild("##limit_characters", imgui.ImVec2(303, 240))
+					imgui.SetCursorPos(imgui.ImVec2(5, 5)) -- fix X
+					imgui.PushItemWidth(150)
+
+					for index, value in ipairs(t_limit_characters) do
+						imgui.SetCursorPosX(5) -- fix X
+						im_slider_int(value["index"], 50, 90, value["path"])
+
+						imgui.SameLine() -- same
+						imgui.Button(value["description2"], imgui.ImVec2(35, 20))
+
+						imgui.SameLine() -- same
+						imgui.CustomButton(value["description1"])
+					end
+				imgui.EndChild()
+
+				imgui.SameLine()
+
+				imgui.BeginChild("##block_for_block", imgui.ImVec2(315, 305))
+					imgui.SetCursorPosY(115) -- fix Y
+					imgui.CenterText(u8"это пустой блок")
+					imgui.CenterText(u8"он когда-нибудь заполнится")
+					imgui.CenterText(u8"наверное :l")
 				imgui.EndChild()
 			end
 		elseif main_menu_navigation["current"] == 3 then
@@ -3472,12 +3541,29 @@ function main()
 						open_menu_map = true
 					end
 				end
+			elseif wparam == vkeys.VK_Y then
+				if t_accept_the_offer then
+					if isKeyCheckAvailable() then
+						consumeWindowMessage(true, true)
+						t_accept_the_offer[3]()
+						t_accept_the_offer = nil
+						destroy_assistant_thread("accept_offer")
+					end
+				end
+			elseif wparam == vkeys.VK_N then
+				if t_accept_the_offer then
+					if isKeyCheckAvailable() then
+						consumeWindowMessage(true, true)
+						t_accept_the_offer = nil
+						destroy_assistant_thread("accept_offer")
+					end
+				end
 			end
 		elseif msg == 0x101 then
 			if wparam == vkeys.VK_X then
 				if isKeyCheckAvailable() then
 					if global_command_handler then
-						-- consumeWindowMessage(true, false)
+						consumeWindowMessage(true, false)
 						global_break_command = os.clock()
 					end
 				end
@@ -3492,32 +3578,17 @@ function main()
 						end
 
 						if not was_found_active_menu then
-							-- if t_quick_menu then t_quick_menu = false end
-							mimgui_window("quick_menu", true)
+							if targeting_vehicle then
+								setVirtualKeyDown(vkeys.VK_RBUTTON, false)
+								create_quick_menu("vehicle", targeting_vehicle)
+								targeting_vehicle = false
+							else
+								mimgui_window("quick_menu", true)
+							end
 						end
 					else
 						-- if t_quick_menu then t_quick_menu = false end
 						mimgui_window("quick_menu", false)
-					end
-				end
-			elseif wparam == vkeys.VK_Y then
-				if t_accept_the_offer then
-					if isKeyCheckAvailable() then
-						consumeWindowMessage(true, false)
-						if t_accept_the_offer[1] == 1 then
-							command_r("cod 14")
-							t_accept_the_offer = nil
-						elseif t_accept_the_offer[1] == 2 then
-							command_patrol()
-							t_accept_the_offer = nil
-						end
-					end
-				end
-			elseif wparam == vkeys.VK_N then
-				if t_accept_the_offer then
-					if isKeyCheckAvailable() then
-						consumeWindowMessage(true, false)
-						t_accept_the_offer = nil
 					end
 				end
 			elseif wparam == vkeys.VK_1 then
@@ -3651,7 +3722,7 @@ function main()
 	end
 
 	-- потекли потоки
-	lua_thread.create(th_dynamic_time_update)
+	-- lua_thread.create(th_dynamic_time_update)
 	lua_thread.create(th_render_player_text)
 	lua_thread.create(th_helper_assistant)
 	lua_thread.create(th_smart_suspects)
@@ -3668,15 +3739,6 @@ function main()
 					else
 						create_player_text(0, 2.5, "ПРИЦЕЛ {C22222}ПЕРЕВЕДЁН{e6e6fa} В РЕЖИМ УДЕРЖАНИЯ")
 					end pricel = not pricel
-				end
-			end
-		end
-
-		if time_take_ads then
-			if os.clock() - time_take_ads > 3 then
-				if isKeyCheckAvailable() and not t_mimgui_render["editor_ads"][0] then
-					sampSendChat("/edit")
-					time_take_ads = os.clock()
 				end
 			end
 		end
@@ -3702,11 +3764,11 @@ function main()
 	    end
 
 		if global_samp_cursor_status then
-			sampSetCursorMode(3)
+			if sampGetCursorMode() ~= 3 then sampSetCursorMode(3) end
 			destroy_samp_cursor = false
 		else
 			if not destroy_samp_cursor then
-				sampSetCursorMode(0)
+				if sampGetCursorMode() ~= 0 then sampSetCursorMode(0) end
 				destroy_samp_cursor = true
 			end
 		end
@@ -3874,16 +3936,6 @@ end
 -- !main
 
 -- thread
-function th_dynamic_time_update()
-	while true do wait(0)
-		if static_time then
-			setTimeOfDay(static_time[1], static_time[2])
-		else
-			setTimeOfDay(os.date("%H"), os.date("%M"))
-		end
-	end
-end
-
 function th_render_player_text()
 	local font = renderCreateFont("tahoma", 6, font_flag.BOLD + font_flag.SHADOW)
 
@@ -4093,6 +4145,7 @@ function t_stroboscopes()
 end
 
 function th_helper_assistant()
+	local assistant_threads = {}
 	local last_update_database = os.clock()
 	local font = renderCreateFont("tahoma", 8, font_flag.BOLD + font_flag.SHADOW)
 
@@ -4128,194 +4181,273 @@ function th_helper_assistant()
 		{ ["position"] = { ["x"] = -87.541, ["y"] = 2442.646, ["z"] = 1183.603 }, ["callback"] = function() sampSendChat("/jaildoor") end }
 	}
 
-	while true do wait(0)
-		local x, y, z = getCharCoordinates(playerPed)
+	-- global functions
+	function create_map_marker(position)
+		table.insert(t_map_markers, {
+			["position"] = position,
+			["marker"] = false,
+			["point3"] = false,
+			["time"] = os.time()
+		})
 
-		if global_samp_cursor_status then
-			local sx, sy = getCursorPos()
-			local w, h = getScreenResolution()
-			if sx > 0 and sy > 0 and sx < w and sy < h then
-			    local cursor_x, cursor_y, cursor_z = convertScreenCoordsToWorld3D(sx, sy, 700.0)
-			    local camera_x, camera_y, camera_z = getActiveCameraCoordinates()
-			    local result, colpoint = processLineOfSight(camera_x, camera_y, camera_z, cursor_x, cursor_y, cursor_z, true, true, true, true, true, true, true)
-        		if result and colpoint["entity"] ~= 0 then
-        			if getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3]) < 10 or player_status > 2 then
-	        			local px, py = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
-	        			local px = px + 15
-	        			local py = py - 15
+		create_assistant_thread("map_marker")
+	end
 
-	        			if colpoint["entityType"] == 3 then
-		        			local player_handle = getCharPointerHandle(colpoint["entity"])
-		        			local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
-		        			if result then
-		        				local player_nickname = sampGetPlayerNickname(player_id)
-		        				renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
-		        				renderFontDrawText(font, string.format("Игрок %s (id %s)", player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
-
-		        				if wasKeyPressed(vkeys.VK_LBUTTON) then
-		        					if not t_mimgui_render["quick_menu"][0] then
-		        						mimgui_window("quick_menu", true)
-			        					t_quick_menu = { 
-			        						{
-			        							["title"] = u8"PRESENT",
-			        							["callback"] = function() sampSendChat(string.format("/present %s", player_id)) end
-			        						},
-			        						{
-			        							["title"] = u8"ALLOW",
-			        							["callback"] = function() sampSendChat(string.format("/allow %s", player_id)) end
-			        						},
-			        						{
-			        							["title"] = u8"GIVE",
-			        							["callback"] = function() sampSendChat(string.format("/give %s", player_id)) end
-			        						},
-			        						{
-			        							["title"] = u8"FUCK",
-			        							["callback"] = function()
-			        								chat("Ммм, зачем тебе это?")
-			        							end
-			        						},
-			        						{
-			        							["title"] = u8"ОБЫЧНОЕ МЕНЮ",
-			        							["callback"] = function()
-			        								t_quick_menu = false
-			        							end
-			        						}
-			        					}
-		        					end
-		        				end
-		        			end
-	        			elseif colpoint["entityType"] == 2 then
-	        				local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
-	        				local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
-	        				if result then
-	        					local vehicle_model = getCarModel(vehicle_handle)
-	        					local normal_model = vehicle_model - 399
-	        					local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
-	        					local vehicle_name = t_vehicle_name[normal_model]
-
-	        					renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
-	        					renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), px, py + 10, 0xFFFFFFFF)
-
-	        					if wasKeyPressed(vkeys.VK_LBUTTON) then
-	        						if not t_mimgui_render["quick_menu"][0] then
-	        							mimgui_window("quick_menu", true)
-		        						t_quick_menu = {
-		        							{
-		        								["title"] = u8"PICK",
-		        								["callback"] = function() sampSendChat("/pick") end
-		        							},
-		        							{
-		        								["title"] = u8"PUT",
-		        								["callback"] = function() sampSendChat("/put") end
-		        							},
-		        							{
-												["title"] = "LOCK",
-		        								["callback"] = function() 
-		        									if t_smart_vehicle["vehicle"][vehicle_id] then
-		        										local word = getCarDoorLockStatus(vehicle_handle) == 0 and "закрыто" or "открыто"
-														chat(string.format("Ваше транспортное средство (%s {HEX}%s{} #{HEX}%s{}) было %s умным ключом.", tf_vehicle_type_name[3][t_vehicle_type[normal_model]], t_vehicle_name[normal_model], vehicle_id, word))
-														sampSendChat(string.format("/lock %s", t_smart_vehicle["vehicle"][vehicle_id]["type"]))
-		        									else
-		        										local buffer = t_quick_menu
-		        										t_quick_menu = {}
-		        										for index = 1, 8 do
-		        											t_quick_menu[index] = {
-		        												["title"] = string.format("LOCK %s", index),
-		        												["callback"] = function() sampSendChat(string.format("/lock %s", index)) end
-		        											}
-		        										end
-		        										table.insert(t_quick_menu, {
-		        											["title"] = u8"ВЕРНУТЬСЯ",
-		        											["callback"] = function() t_quick_menu = buffer end
-		        										})
-		        									end
-		        								end
-		        							},
-		        							{
-		        								["title"] = "FIX",
-		        								["callback"] = function() sampSendChat("/fix") end
-		        							},
-		        							{
-		        								["title"] = u8"МЕГАФОН",
-		        								["callback"] = function()
-		        									local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
-		        									if distance < 55 then
-		        										local player_handle = getDriverOfCar(vehicle_handle)
-		        										local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
-		        										if result then
-		        											command_megafon(player_id, vehicle_model)
-		        										end
-		        									end
-		        								end
-		        							},
-			        						{
-			        							["title"] = u8"ОБЫЧНОЕ МЕНЮ",
-			        							["callback"] = function()
-			        								t_quick_menu = false
-			        							end
-			        						}
-		        						}
-		        					end
-	        					end
-	        				end
-	        			end
-	        		end
-			    end
+	function destroy_map_marker(position)
+		if not (position["y"] and position["z"]) then
+			local index = position["x"]
+			if t_map_markers[index] then 
+				table.remove(t_map_markers, index)
+				if #t_map_markers == 0 then destroy_assistant_thread("map_marker") end
 			end
-		end
-
-		if configuration["MAIN"]["settings"]["quick_open_door"] then
-			for index, value in ipairs(quick_open_door) do
-				local distance = getDistanceBetweenCoords3d(x, y, z, value["position"]["x"], value["position"]["y"], value["position"]["z"])
-				if distance < 3 then
-					local sx, sy = convert3DCoordsToScreen(value["position"]["x"], value["position"]["y"], value["position"]["z"])
-					local text = string.format("press  %sJ{FFFFFF}  to use", configuration["MAIN"]["settings"]["script_color"])
-
-					-- renderDrawBox(sx - 38, sy, 2, 13, configuration["MAIN"]["settings"]["t_script_color"])
-					renderDrawBox(sx - 35, sy, 80, 15, 0x69696969)
-					renderFontDrawText(font, text, sx - 32, sy + 1, 0xFFFFFFFF)
-
-					if distance < 1 then if wasKeyPressed(vkeys.VK_J) then value["callback"]() end end
+		else
+			for index, value in ipairs(t_map_markers) do
+				local distance = getDistanceBetweenCoords3d(position["x"], position["y"], position["z"], value["position"]["x"], value["position"]["y"], value["position"]["z"])
+				if distance < 0.5 then
+					table.remove(t_map_markers, index)
+					if #t_map_markers == 0 then destroy_assistant_thread("map_marker") end
 				end
 			end
 		end
+	end
 
-		if #t_map_marker > 0 then
-			for index, value in ipairs(t_map_marker) do
-				if not value["marker"] then
-					t_map_marker[index]["marker"] = addBlipForCoord(value["x"], value["y"], value["z"])
-					changeBlipColour(t_map_marker[index]["marker"], 0x28B463FF)
+	function create_offer(index, callback)
+		t_accept_the_offer = { index, os.clock(), callback }
+		create_assistant_thread("accept_offer")
+	end
+
+	function create_quick_menu(index, input)
+		if t_mimgui_render["quick_menu"][0] then return false end
+
+		local function test_distance(handle, maximum_distance, entity)
+			local getted = entity and doesVehicleExist(handle) or doesCharExist(handle)
+			if not getted then 
+				for index, value in ipairs(t_quick_menu) do 
+					if value["distance"] then value["color"] = 0xFFA0A0A0 end
 				end
 
-				local distance = getDistanceBetweenCoords3d(x, y, z, value["x"], value["y"], value["z"])
-				if distance < 25 then
-					chat("Вы достигли точки назначения.")
-					removeBlip(value["marker"])
-					table.remove(t_map_marker, index)
-				end
+				chat(entity and "Этот транспорт находится слишком далеко от вас." or "Этот игрок находится слишком далеко от вас.")
+				return false
 			end
-		end
 
-		if t_accept_the_offer then
-			if os.clock() - t_accept_the_offer[2] > 45 then t_accept_the_offer = nil end
-		end
-
-		if procedures_performed then
-			for index, value in ipairs(procedures_performed) do
-				if os.time() - value["time"] > 60 then
-					chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], value["nickname"]))
-					local player_id = sampGetPlayerIdByNickname(value["nickname"])
-					if player_id and isPlayerConnected(player_id) then
-						chat("Если вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
-						t_accept_the_offer = {3, os.clock(), player_id}
+			local distance = entity and getDistanceToVehicle(handle) or getDistanceToPlayer(handle)
+			if distance > maximum_distance then
+				for index, value in ipairs(t_quick_menu) do
+					if value["distance"] then 
+						if distance > value["distance"] then
+							value["color"] = 0xFFA0A0A0
+						end
 					end
-					table.remove(procedures_performed, index)
 				end
+
+				chat(entity and "Этот транспорт находится слишком далеко от вас." or "Этот игрок находится слишком далеко от вас.")
+				return false
 			end
+
+			for index, value in ipairs(t_quick_menu) do
+				if value["distance"] then 
+					value["color"] = (distance > value["distance"]) and 0xFFA0A0A0 or nil
+				end
+			end return true
 		end
 
-		if configuration["MAIN"]["settings"]["normal_speedometer_update"] then
-			if isCharSittingInAnyCar(playerPed) then
+		local menu = {
+			["char"] = {
+				{
+					["title"] = u8"PRESENT",
+					["callback"] = function()
+						if test_distance(input["player_handle"], 10, false) then
+							sampSendChat(string.format("/present %s", input["player_id"]))
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"ALLOW",
+					["callback"] = function()
+						if test_distance(input["player_handle"], 10, false) then
+							sampSendChat(string.format("/allow %s", input["player_id"])) 
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"GIVE",
+					["callback"] = function() 
+						if test_distance(input["player_handle"], 10, false) then
+							sampSendChat(string.format("/give %s", input["player_id"])) 
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"HI",
+					["callback"] = function() 
+						if test_distance(input["player_handle"], 10, false) then
+							sampSendChat(string.format("/hi %s", input["player_id"])) 
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"ОБЫЧНОЕ МЕНЮ",
+					["callback"] = function()
+						t_quick_menu = false
+					end
+				}
+			},
+			["vehicle"] = {
+				{
+					["title"] = u8"PICK",
+					["callback"] = function()
+						if test_distance(input["vehicle_handle"], 10, true) then
+							sampSendChat("/pick")
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"PUT",
+					["callback"] = function() 
+						if test_distance(input["vehicle_handle"], 10, true) then
+							sampSendChat("/put") 
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = "LOCK",
+					["callback"] = function() 
+						if not test_distance(input["vehicle_handle"], 25, true) then return false end
+
+						if t_smart_vehicle["vehicle"][input["vehicle_id"]] then
+						    local word = getCarDoorLockStatus(input["vehicle_handle"]) == 0 and "закрыто" or "открыто"
+							chat(string.format("Ваше транспортное средство (%s {HEX}%s{} #{HEX}%s{}) было %s умным ключом.", tf_vehicle_type_name[3][t_vehicle_type[input["normal_model"]]], t_vehicle_name[input["normal_model"]], input["vehicle_id"], word))
+							sampSendChat(string.format("/lock %s", t_smart_vehicle["vehicle"][input["vehicle_id"]]["type"]))
+						else
+						    local buffer = t_quick_menu
+						    t_quick_menu = {}
+						    for index = 1, 8 do
+						        t_quick_menu[index] = {
+						        	["title"] = string.format("%s", index),
+						        	["callback"] = function() sampSendChat(string.format("/lock %s", index)) end
+						        }
+						    end
+
+						    table.insert(t_quick_menu, {
+						        ["title"] = u8"ВЕРНУТЬСЯ",
+						       	["callback"] = function() t_quick_menu = buffer end
+						    })
+						end
+					end,
+					["distance"] = 25,
+					["color"] = (input["distance"] > 25) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = "FIX",
+					["callback"] = function()
+						if test_distance(input["vehicle_handle"], 10, true) then
+							sampSendChat("/fix") 
+						end
+					end,
+					["distance"] = 10,
+					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"ОБЫЧНОЕ МЕНЮ",
+					["callback"] = function()
+						t_quick_menu = false
+					end
+				}
+			}
+		}
+
+		if menu[index] then
+			t_quick_menu = menu[index]
+			mimgui_window("quick_menu", true)
+		end
+	end
+
+	function create_assistant_thread(index)
+		local threads = {
+			["quick_open_door"] = function(x, y, z)
+				if configuration["MAIN"]["settings"]["quick_open_door"] then
+					for index, value in ipairs(quick_open_door) do
+						local distance = getDistanceBetweenCoords3d(x, y, z, value["position"]["x"], value["position"]["y"], value["position"]["z"])
+						if distance < 3 then
+							local sx, sy = convert3DCoordsToScreen(value["position"]["x"], value["position"]["y"], value["position"]["z"])
+							local text = string.format("Для взаимодействия нажмите клавишу %sJ{FFFFFF}.", configuration["MAIN"]["settings"]["script_color"])
+							local fix = renderGetFontDrawTextLength(font, text)
+							-- renderDrawBox(sx - 35, sy, 80, 15, 0x69696969)
+							renderFontDrawText(font, text, sx - 110, sy + 1, 0xFFFFFFFF)
+
+							if distance < 1 then
+								if wasKeyPressed(vkeys.VK_J) then value["callback"]() end 
+							end
+						end
+					end
+				end
+			end,
+			["map_marker"] = function(x, y, z)
+				for index, value in ipairs(t_map_markers) do
+					if not value["marker"] then
+						value["marker"] = addBlipForCoord(value["position"]["x"], value["position"]["y"], value["position"]["z"])
+						value["point3"] = createUser3dMarker(value["position"]["x"], value["position"]["y"], value["position"]["z"] + 1)
+						local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+						changeBlipColour(value["marker"], color)
+					end
+
+					local distance = getDistanceBetweenCoords3d(x, y, z, value["position"]["x"], value["position"]["y"], value["position"]["z"])
+					if distance < 20 then
+						local delta = os.time() - value["time"]
+						local minute, second = math.floor(delta / 60), math.fmod(delta, 60)
+						chat(string.format("Вы достигли точки назначения. Время в пути составило: {HEX}%s{} мин. {HEX}%s{} сек.", minute, second))
+
+						removeBlip(value["marker"])
+						removeUser3dMarker(value["point3"])
+						destroy_map_marker({ ["x"] = index })
+					end
+				end
+			end,
+			["accept_offer"] = function()
+				if t_accept_the_offer then
+					if os.clock() - t_accept_the_offer[2] > 45 then 
+						t_accept_the_offer = nil
+						destroy_assistant_thread("accept_offer")
+					end
+				end
+			end,
+			["procedures_performed"] = function()
+				if not procedures_performed then 
+					destroy_assistant_thread("procedures_performed")
+					return false 
+				end
+
+				for index, value in ipairs(procedures_performed) do
+					if os.time() - value["time"] > 60 then
+						chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], value["nickname"]))
+						local player_id = sampGetPlayerIdByNickname(value["nickname"])
+
+						if player_id and isPlayerConnected(player_id) then
+							chat("Если вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
+							t_accept_the_offer = {3, os.clock(), player_id}
+						end
+
+						table.remove(procedures_performed, index)
+						if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
+					end
+				end
+			end,
+			["normal_speedometer_update"] = function()
+				if not configuration["MAIN"]["settings"]["normal_speedometer_update"] then return false end
+				if not isCharSittingInAnyCar(playerPed) then return false end
+				
 				if not (t_smart_vehicle["speedometr_id"] or sampTextdrawIsExists(t_smart_vehicle["speedometr_id"])) then
 					for textdraw_id = 0, 3000 do
 						if sampTextdrawIsExists(textdraw_id) then
@@ -4327,7 +4459,7 @@ function th_helper_assistant()
 					end
 				else
 					local vehicle_handle = storeCarCharIsInNoSave(playerPed)
-					local vehicle_speed = math.ceil(getCarSpeed(vehicle_handle) * 2.02)
+					local vehicle_speed = getCarSpeed(vehicle_handle) * 2.02
 					local textdraw_text = sampTextdrawGetString(t_smart_vehicle["speedometr_id"])
 					sampTextdrawSetString(t_smart_vehicle["speedometr_id"], string.gsub(textdraw_text, "%d+_km/h", string.format("%d_km/h", vehicle_speed)))
 
@@ -4354,8 +4486,222 @@ function th_helper_assistant()
 						end
 					end
 				end
+			end,
+			["fast_interaction"] = function(x, y, z)
+				if not global_samp_cursor_status then 
+					if not isKeyDown(VK_RBUTTON) then
+						if t_entity_marker[1] then 
+						    removeBlip(t_entity_marker[1]) 
+						    t_entity_marker = { false, false }
+						end
+					end return false 
+				end
+				if t_mimgui_render["quick_menu"][0] then return false end
+				if not configuration["MAIN"]["settings"]["fast_interaction"] then return false end
+
+				local sx, sy = getCursorPos()
+				local w, h = getScreenResolution()
+				if not (sx > 0 and sy > 0 and sx < w and sy < h) then return false end
+
+				local cursor_x, cursor_y, cursor_z = convertScreenCoordsToWorld3D(sx, sy, 700.0)
+				local camera_x, camera_y, camera_z = getActiveCameraCoordinates()
+				local result, colpoint = processLineOfSight(camera_x, camera_y, camera_z, cursor_x, cursor_y, cursor_z, true, true, true, true, true, true, true)
+				if not result then return false end
+
+				local px, py = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+				local px = px + 15
+				local py = py - 15
+
+				if t_entity_marker[2] then
+					if t_entity_marker[2] ~= colpoint["entity"] then
+						removeBlip(t_entity_marker[1])
+					    t_entity_marker = { false, false }
+					end
+				end
+
+				if colpoint["entityType"] == 3 then
+					local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+					if distance > 15 then return false end
+
+					local player_handle = getCharPointerHandle(colpoint["entity"])
+					local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
+					if result then
+						local player_nickname = sampGetPlayerNickname(player_id)
+						renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
+
+						if configuration["USERS"]["content"][player_nickname] then
+						    renderFontDrawText(font, string.format("Игрок %s%s{ffffff} (id %s)", configuration["USERS"]["content"][player_nickname]["color"], player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
+						else
+						    renderFontDrawText(font, string.format("Игрок %s (id %s)", player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
+						end
+
+						if not t_entity_marker[1] then 
+						    t_entity_marker = { addBlipForChar(player_handle), colpoint["entity"] }
+						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+						   	changeBlipColour(t_entity_marker[1], color)
+						end
+
+						if wasKeyPressed(vkeys.VK_LBUTTON) then
+						    create_quick_menu("char", { ["player_id"] = player_id, ["distance"] = distance })
+						end 
+
+						return true
+					end
+				elseif colpoint["entityType"] == 2 then
+					local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+					if distance > 55 then return false end
+
+					local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
+					local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
+					if result then
+					    local vehicle_model = getCarModel(vehicle_handle)
+					    local normal_model = vehicle_model - 399
+					    local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
+					    local vehicle_name = t_vehicle_name[normal_model]
+
+					   	renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
+					    renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), px, py + 10, 0xFFFFFFFF)
+
+					    if not t_entity_marker[1] then 
+						    t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
+						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+						     changeBlipColour(t_entity_marker[1], color)
+						end
+
+					    if wasKeyPressed(vkeys.VK_LBUTTON) then
+					        create_quick_menu("vehicle", { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance})
+					    end
+
+					    return true
+					end
+				end
+
+				if t_entity_marker[1] then 
+					removeBlip(t_entity_marker[1]) 
+				   	t_entity_marker = { false, false }
+				end
+			end,
+			["fast_interaction_2"] = function(x, y, z)
+				if not isKeyDown(VK_RBUTTON) then 
+					if not global_samp_cursor_status then 
+						if t_entity_marker[1] then
+							removeBlip(t_entity_marker[1]) 
+							t_entity_marker = { false, false }
+							targeting_vehicle = false
+						end
+					end return false 
+				end
+				if t_mimgui_render["quick_menu"][0] then return false end
+				if not configuration["MAIN"]["settings"]["fast_interaction"] then return false end
+
+				if isCharSittingInAnyCar(playerPed) then return false end
+				if getCurrentCharWeapon(playerPed) ~= 0 then return false end
+				
+				local x1, y1, z1 = getActiveCameraCoordinates()
+				local x2, y2, z2 = getActiveCameraPointAt()
+
+				local angle = math.atan2(y2 - y1, x2 - x1)
+				local radius = 5
+				local vector = { ["x"] = x + radius * math.cos(angle), ["y"] = y + radius * math.sin(angle), ["z"] = z + radius * (z2 - z1) }
+
+				local result, colpoint = processLineOfSight(x, y, z, vector["x"], vector["y"], vector["z"], true, true, false, true, true, true, true)
+				if not result then return false end
+
+				if t_entity_marker[2] then
+					if t_entity_marker[2] ~= colpoint["entity"] then
+					    removeBlip(t_entity_marker[1])
+					    t_entity_marker = { false, false }
+					    targeting_vehicle = false
+					end
+				end
+
+				if colpoint["entityType"] == 2 then 
+					local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
+					local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
+					if result then
+						local vehicle_model = getCarModel(vehicle_handle)
+						local normal_model = vehicle_model - 399
+						local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
+						local vehicle_name = t_vehicle_name[normal_model]
+						local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+
+						targeting_vehicle = { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance }
+
+						local w, h = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+
+						renderFontDrawText(font, string.format("Для взаимодействия нажмите %sZ{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), w, h, 0xCAFFFFFF)
+						renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), w, h + 10, 0xFFFFFFFF)
+
+						if not t_entity_marker[1] then 
+						    t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
+						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+						    changeBlipColour(t_entity_marker[1], color) 
+						end
+
+					   return true
+					end
+				end
+
+				if t_entity_marker[1] then
+					removeBlip(t_entity_marker[1]) 
+					t_entity_marker = { false, false }
+					targeting_vehicle = false
+				end
+			end,
+			["static_time"] = function()
+				if not t_static_time[3] then
+					if math.fmod(os.clock(), 60) == 0 then
+						t_static_time = { os.date("%H"), os.date("%M"), false }
+					end
+				end
+				setTimeOfDay(t_static_time[1], t_static_time[2])
+			end,
+			["time_take_ads"] = function()
+				if time_take_ads then
+					if os.clock() - time_take_ads > 3 then
+						if isKeyCheckAvailable() and not t_mimgui_render["editor_ads"][0] then
+							sampSendChat("/edit")
+							time_take_ads = os.clock()
+						end
+					end
+				end
+			end
+ 		}
+
+		if threads[index] then
+			local bool = false
+
+			for key, value in ipairs(assistant_threads) do
+				if value["type"] == index then
+					bool = true
+				end
+			end 
+
+			if not bool then
+				table.insert(assistant_threads, { ["type"] = index, ["callback"] = threads[index] })
+				return true
 			end
 		end
+	end
+
+	function destroy_assistant_thread(__type)
+		for index, value in ipairs(assistant_threads) do
+			if value["type"] == __type then
+				table.remove(assistant_threads, index)
+				break
+			end
+		end
+	end
+	-- 
+
+	create_assistant_thread("normal_speedometer_update")
+	create_assistant_thread("fast_interaction")
+	create_assistant_thread("fast_interaction_2")
+	create_assistant_thread("static_time")
+
+	while true do wait(0)
+		local x, y, z = getCharCoordinates(playerPed)
+		for index, value in ipairs(assistant_threads) do value["callback"](x, y, z) end
 	end
 end
 
@@ -4698,19 +5044,19 @@ end
 
 function command_st(parametrs)
 	if string.match(parametrs, "(%d+) (%d+)") then
-		local hour, min = string.match(parametrs, "(%d+) (%d+)")
-		if tonumber(hour) >= 0 and tonumber(hour) <= 23 and tonumber(min) >= 0 and tonumber(min) < 60 then
+		local hour, minute = string.match(parametrs, "(%d+) (%d+)")
+		if tonumber(hour) >= 0 and tonumber(hour) <= 23 and tonumber(minute) >= 0 and tonumber(minute) < 60 then
 			patch_samp_time_set(true)
-			static_time = {hour, min}
+			t_static_time = { hour, minute, true }
 			chat("Вы изменили игровое время на {HEX}" .. hour .. "{} часов, {HEX}" .. min .. "{} минут.")
 		else
 			patch_samp_time_set(false)
-			static_time = nil
+			t_static_time = { os.date("%H"), os.date("%M"), false }
 			chat("Часы не должны быть больше 23 и меньше 0. Минуты не должны быть больше 59 и меньше 0.")
 		end
 	else
-		if static_time then
-			static_time = nil
+		if t_static_time[3] then
+			t_static_time = { os.date("%H"), os.date("%M"), false }
 			patch_samp_time_set(false)
 			chat("Вы перешли к режиму {HEX}динамического обновления времени{}.")
 		else
@@ -5512,12 +5858,18 @@ end
 function command_helper_online()
 	local players, result = {}, {
 		{ ["title"] = "Организация\tОнлайн", ["onclick"] = function() end },
-		{ ["title"] = "", ["submenu"] = {
-				["title"] = "Администрация",
-				{title = "nickname\tУровень\tТелефонный номер"}
-			} 
-		}
 	}
+
+	if player_status > 1 then
+		table.insert(result, { 
+			["title"] = "", 
+			["submenu"] = {
+				{ ["title"] = "Администрация",
+					{ ["title"] = "nickname\tУровень\tТелефонный номер" }
+				}
+			}
+		})
+	end 
 
 	for player_id = 0, 1000 do
 		if isPlayerConnected(player_id) then
@@ -5532,19 +5884,23 @@ function command_helper_online()
 				player_id = player_id
 			})
 
-			if configuration["DATABASE"]["player"][player_nickname] then
-				if configuration["DATABASE"]["player"][player_nickname]["admin"] then
-					local telephone = configuration["DATABASE"]["player"][player_nickname]["telephone"]
-					table.insert(result[2]["submenu"], {
-						title = string.format("%s (id %s) {%s}**\t%s\t%s", player_nickname, player_id, argb_to_hex(player_color), player_score, telephone and telephone or "Неизвестно")
-					})
+			if player_status > 1 then
+				if configuration["DATABASE"]["player"][player_nickname] then
+					if configuration["DATABASE"]["player"][player_nickname]["admin"] then
+						local telephone = configuration["DATABASE"]["player"][player_nickname]["telephone"]
+						table.insert(result[2]["submenu"], {
+							title = string.format("%s (id %s) {%s}**\t%s\t%s", player_nickname, player_id, argb_to_hex(player_color), player_score, telephone and telephone or "Неизвестно")
+						})
+					end
 				end
 			end
 		end
 	end
 
-	-- online admins
-	result[2]["title"] = string.format("Администрация\t%s", #result[2]["submenu"] - 1)
+	if player_status > 1 then
+		-- online admins
+		result[2]["title"] = string.format("Администрация\t%s", #result[2]["submenu"] - 1)
+	end
 
 	local space, players = players, {}
 	for index, value in pairs(space) do
@@ -6132,20 +6488,23 @@ function command_animations()
 end
 
 function command_sad()
-	if time_take_ads then 
+	if time_take_ads then
 		time_take_ads = false 
 		for index, value in ipairs(t_player_text) do
 			if value["type"] == 4 then 
 				destroy_player_text(index)
 			end
 		end
+		destroy_assistant_thread("time_take_ads")
 	else 
-		time_take_ads = os.clock() 
+		time_take_ads = os.clock()
 		create_player_text(4)
+		create_assistant_thread("time_take_ads")
 	end
 end
 
 function command_helper_admins(parametrs)
+	if player_status < 1 then return false end
 	if tonumber(parametrs) then
 		if isPlayerConnected(parametrs) then
 			local admin_nickname = sampGetPlayerName(parametrs)
@@ -7210,7 +7569,7 @@ function displaying_inline_sections(input, last)
 		if k == "position" then
 			imgui.CustomButton(tostring(string.upper(k))) imgui.SameLine()
 			if imgui.Button(u8"Поставить метку") then
-				table.insert(t_map_marker, {x = v["x"], y = v["y"], z = v["z"]})
+				create_map_marker({ v["x"], v["y"], v["z"] })
 				local x, y, z = getCharCoordinates(playerPed)
 				local distance = getDistanceBetweenCoords3d(x, y, z, v["x"], v["y"], v["z"])
 				chat(string.format("На вашем радаре отмечен {HEX}маркер{}, расстояние до него {HEX}%s{} м.", math.floor(distance)))
@@ -7237,6 +7596,8 @@ function displaying_inline_sections(input, last)
 end
 
 function displaying_quick_menu(input, close) -- original author DonHomka
+	local result
+
 	local style = imgui.GetStyle()
 	local minimal_radius = 60.0
 	local maximum_radius = 200.0
@@ -7279,10 +7640,12 @@ function displaying_quick_menu(input, close) -- original author DonHomka
 			end
 		end
 
+		local color = input[index]["color"] or configuration["MAIN"]["settings"]["t_script_color"]
+
 		local arc_segments = (64 * input_arc_span / (2 * IM_PI)) + 1
 		DrawList:PathArcTo(center, maximum_radius - style["ItemInnerSpacing"]["x"], input_outer_angle_minimum, input_outer_angle_maximum, arc_segments)
 		DrawList:PathArcTo(center, minimal_radius + style["ItemInnerSpacing"]["x"], input_inner_angle_maximum, input_inner_angle_minimum, arc_segments)
-		DrawList:PathFillConvex(hovered and configuration["MAIN"]["settings"]["t_script_color"] or 0xFF232323)
+		DrawList:PathFillConvex(hovered and color or 0xFF232323)
 
 		local text_size = imgui.CalcTextSize(input_label)
 		local text_pos = imgui.ImVec2(
@@ -7294,13 +7657,15 @@ function displaying_quick_menu(input, close) -- original author DonHomka
 			if imgui.IsMouseClicked(0) then
 				if input[index] and input[index]["callback"] then
 					input[index]["callback"]()
-					return true
+					result = true
 				end
 			end
 		end
 	end
 
 	DrawList:PopClipRect()
+
+	if result then return result end
 end
 
 function register_quick_menu()
@@ -8008,7 +8373,7 @@ function sampev.onServerMessage(color, text)
 			local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
 			if officer_nickname == sampGetPlayerName(player_id) then
 				if patrol_status["status"] then
-					t_accept_the_offer = {1, os.clock()}
+					create_offer(1, function() command_r("cod 14") end)
 					lua_thread.create(function() wait(10)
 						chat("Если вы желаете объвить о том, что доставляете подозреваемого в департамент, нажмите {HEX}Y{}.")
 					end)
@@ -8198,7 +8563,12 @@ function sampev.onServerMessage(color, text)
 		elseif string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5") then -- procedure
 			local nickname, procedure, step = string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5")
 			if not procedures_performed then procedures_performed = {} end
-			table.insert(procedures_performed, {nickname = nickname, procedure = string.nlower(procedure), step = tonumber(step), time = os.time()})
+			table.insert(procedures_performed, { ["nickname"] = nickname, ["procedure"] = string.nlower(procedure), ["step"] = tonumber(step), ["time"] = os.time() })
+			create_assistant_thread("procedures_performed")
+
+			lua_thread.create(function() wait(1)
+				chat(string.format("Был запущен таймер, который уведомит вас о возможности продолжить процедуру."))
+			end)
 		elseif string.match(text, "Вы выбрали заказ. Отправляйтесь к месту загрузки") then -- tk
 			product_delivery_status = 1
 		end
@@ -8734,7 +9104,7 @@ function sampev.onSendChat(text)
 	configuration["STATISTICS"]["message"] = configuration["STATISTICS"]["message"] + 1
 	if not need_update_configuration then need_update_configuration = os.clock() end
 
-	if string.len(text) > 90 then
+	if string.len(text) > configuration["MAIN"]["characters_number"]["chat"] then
 		if not last_on_send_value then
 			last_on_send_value = { value, "", os.clock() }
 		else
@@ -8787,20 +9157,21 @@ function sampev.onSendCommand(parametrs)
 		end
 
 		if value then
+			local maximum_number_of_characters = maximum_number_of_characters()
 			if maximum_number_of_characters[command] then
-				if not last_on_send_value then
-					last_on_send_value = { value, command, os.clock() }
-				else
-					if last_on_send_value[1] == value and last_on_send_value[2] == command and os.clock() - last_on_send_value[3] < 0.5 then
-						last_on_send_value = false
-						chat("Повторный ввод однотипного содержания был заблокирован.")
-						return false
-					else
-						last_on_send_value = { value, command, os.clock() }
-					end
-				end
-
 				if maximum_number_of_characters[command] < string.len(value) then
+					if not last_on_send_value then
+						last_on_send_value = { value, command, os.clock() }
+					else
+						if last_on_send_value[1] == value and last_on_send_value[2] == command and os.clock() - last_on_send_value[3] < 0.5 then
+							last_on_send_value = false
+							chat("Повторный ввод однотипного содержания был заблокирован.")
+							return false
+						else
+							last_on_send_value = { value, command, os.clock() }
+						end
+					end
+
 					if command == "me" then
 						local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 						for index, value in ipairs(result) do
@@ -8845,20 +9216,27 @@ function sampev.onSendCommand(parametrs)
 								sampSendChat(string.format("/%s %s ..", command, value))
 							else
 								sampSendChat(string.format("/%s .. %s", command, value))
-							end
+							end 
 						end
 					end return false
 				end
 			else
-				if string.match(value, "(%d+)") then -- типа фаст проклик диалога
+				if string.match(value, "(%d+)") then -- типа фаст проклик диалога 
 					last_send_command = {
 						["send"] = command,
-						["time"] = os.clock(),
+						["time"] = os.clock(), 
 						["indexes"] = {}
 					}
 
-					for index in string.gmatch(value, "(%d+)") do
-						table.insert(last_send_command["indexes"], { tonumber(index), false })
+					if command == "anim" then
+						if value == "0" or value == "79" then
+							table.insert(last_send_command["indexes"], { 79, false })
+							return { "/anim" }
+						end
+					else
+						for index in string.gmatch(value, "(%d+)") do
+							table.insert(last_send_command["indexes"], { tonumber(index), false })
+						end
 					end
 				end
 			end
@@ -8892,14 +9270,14 @@ end
 function sampev.onSendDialogResponse(dialogId, button, listboxId, input)
 	if dialogId == 0 then
 		if button == 1 and t_fuel_station[listboxId] then
-			table.insert(t_map_marker, t_fuel_station[listboxId])
+			create_map_marker(t_fuel_station[listboxId])
 			local x, y, z = getCharCoordinates(playerPed)
 			local distance = getDistanceBetweenCoords3d(x, y, z, t_fuel_station[listboxId]["x"], t_fuel_station[listboxId]["y"], t_fuel_station[listboxId]["z"])
 			chat(string.format("На вашем радаре отмечена {HEX}АЗС{}, расстояние до неё {HEX}%s{} м.", math.floor(distance)))
 		end
 	elseif dialogId == 101 then
 		if button == 1 then
-			if not (listboxId == 1 or listboxId == 2 or listboxId == 3 or listboxId == 9) then
+			if not (listboxId == 1 or listboxId == 2 or listboxId == 3 or listboxId == 9 or listboxId == 8) then
 				sampSendDialogResponse(dialogId, button, listboxId, input)
 				sampSendChat("/buy")
 				return false
@@ -9033,7 +9411,7 @@ function sampev.onSendEnterVehicle(vehicle_id, passenger)
 			local vehicle = "-596-597-598-599-601-427-528-415-523-490-"
 			if string.match(vehicle, "%-" .. getCarModel(handle) .. "%-") then
 				chat("Если вы желаете активировать патрульного ассистента нажмите {HEX}Y{} или введите {HEX}/patrol{}.")
-				t_accept_the_offer = {2, os.clock()}
+				create_offer(2, function() command_patrol() end)
 			end
 		end
 	end
@@ -9054,8 +9432,8 @@ function sampev.onSetVehicleParamsEx(vehicle_id, parametrs, doors, windows)
 							}
 
 							local normal_vehicle_id = getCarModel(vehicle_handle) - 399
-							chat(string.format("Транспортное средство (%s {HEX}%s{} #{HEX}%s{}) теперь может быть открыто умным ключом ..", tf_vehicle_type_name[3][t_vehicle_type[normal_vehicle_id]], t_vehicle_name[normal_vehicle_id], vehicle_id))
-							chat(".. для этого введите команду {HEX}/lock{} без параметров или нажмите клавишу {HEX}J{} рядом с транспортом.")
+							chat(string.format("Транспортное средство (%s {HEX}%s{} #{HEX}%s{}) теперь может быть открыто умным ключом.", tf_vehicle_type_name[3][t_vehicle_type[normal_vehicle_id]], t_vehicle_name[normal_vehicle_id], vehicle_id))
+							chat("Для этого введите команду {HEX}/lock{} без параметров или нажмите клавишу {HEX}J{} рядом с транспортом.")
 						end
 					end
 				end
@@ -9087,47 +9465,61 @@ function sampev.onShowTextDraw(textdraw_id, another)
 	end
 end
 
-function onReceiveRpc(id, bs) -- fix FT
-    if id == 91 then
-		if isCharSittingInAnyCar(playerPed) then
-			local vehicle_handle = storeCarCharIsInNoSave(playerPed)
-			if vehicle_handle > 0 then
-				raknetBitStreamSetReadOffset(bs, 8)
-				local t_rpc_coordinates = { ["x"] = raknetBitStreamReadFloat(bs), ["y"] = raknetBitStreamReadFloat(bs), ["z"] = raknetBitStreamReadFloat(bs) }
-				local vehicle_pointer = getCarPointer(vehicle_handle) --0x4A0
-				if memory.getfloat(vehicle_pointer + 0x49C) == 0 and memory.getfloat(vehicle_pointer + 0x4A0) == 0 then return false end
+function sampev.onSetInterior(interior_id)
+	if interior_id ~= 0 then 
+		create_assistant_thread("quick_open_door")
+	else
+		destroy_assistant_thread("quick_open_door")
+	end
+end
 
-				local distance = math.abs(math.sqrt(t_rpc_coordinates["x"] ^ 2 + t_rpc_coordinates["y"] ^ 2 + t_rpc_coordinates["z"] ^ 2))
-				local vehicle_vectorX, vehicle_vectorY, vehicle_vectorZ = getCarSpeedVector(vehicle_handle)
+function sampev.onSetVehicleVelocity(turn, velocity)
+	if isCharSittingInAnyCar(playerPed) then
+		local vehicle_handle = storeCarCharIsInNoSave(playerPed)
+		local vehicle_vector_x, vehicle_vector_y, vehicle_vector_z = getCarSpeedVector(vehicle_handle)
 
-				local angle = 5
-
-				if vehicle_vectorX ~= 0 and vehicle_vectorY ~= 0 and vehicle_vectorZ ~= 0 then
-					local f_angle = math.deg(math.atan2(vehicle_vectorY - t_rpc_coordinates["y"], vehicle_vectorX - t_rpc_coordinates["x"]))
-					local f_angle = tonumber(string.format("%.2f",(f_angle < 0 and 360 - math.abs(f_angle) or f_angle)))
-					local s_angle = (getCarHeading(vehicle_handle) + 90)
-					local s_angle = tonumber(string.format("%.2f",(s_angle > 360 and s_angle - 360 or s_angle)))
-					if (s_angle - angle) <= f_angle and (s_angle + angle) >= f_angle then
-						local k = distance / math.sqrt((vehicle_vectorX ^ 2) + (vehicle_vectorY ^ 2) + (vehicle_vectorZ ^ 2))
-						local bs = raknetNewBitStream()
-						raknetBitStreamWriteBool(bs,false)
-						raknetBitStreamWriteFloat(bs, vehicle_vectorX * k)
-						raknetBitStreamWriteFloat(bs, vehicle_vectorY * k)
-						raknetBitStreamWriteFloat(bs, vehicle_vectorZ * k)
-						return bs
-					end
-				end return false
-			end
+		if vehicle_vector_x == 0 or vehicle_vector_y == 0 or vehicle_vector_z == 0 then 
+			return false
 		end
-    end
+
+		if not isCarEngineOn(vehicle_handle) or not (isKeyDown(VK_W) or isKeyDown(VK_S)) then
+			return false
+		end
+
+		local velocity_angle = math.deg(math.atan2(vehicle_vector_y - velocity["y"], vehicle_vector_x - velocity["x"]))
+		local vehicle_angle = getCarHeading(vehicle_handle) + 90
+
+		if velocity_angle < 0 then velocity_angle = 360 - math.abs(velocity_angle) end
+		if vehicle_angle > 360 then vehicle_angle = vehicle_angle - 360 end
+
+		local delta = 15
+
+		if vehicle_angle - delta <= velocity_angle and vehicle_angle + delta >= velocity_angle then
+			local distance = math.sqrt(velocity["x"]^2 + velocity["y"]^2 + velocity["z"]^2) 
+			local k = distance / math.sqrt(vehicle_vector_x^2 + vehicle_vector_y^2 + vehicle_vector_z^2)
+
+			velocity["x"] = vehicle_vector_x * k
+			velocity["y"] = vehicle_vector_y * k
+			velocity["z"] = vehicle_vector_z * k
+
+			return { turn, velocity }
+		else
+			return false
+		end
+	end
 end
 
 function onScriptTerminate(script, bool)
 	if thisScript() == script then
 		configuration_save(configuration, true)
-		for index, value in ipairs(t_map_marker) do
+
+		for index, value in ipairs(t_map_markers) do
 			if value["marker"] then removeBlip(value["marker"]) end
+			if value["point3"] then removeUser3dMarker(value["point3"]) end
 		end
+
+		if t_entity_marker[1] then removeBlip(t_entity_marker[1]) end 
+
 		-- if not is_script_exit then thisScript():reload() end
 	end
 end
@@ -9141,7 +9533,7 @@ function checking_relevance_versions_and_files()
 	if responce then
 		local versions = decodeJson(responce)
 		if versions["MAIN"]["version"] == thisScript().version then
-			chat("Игровой помощник был успешно запущен. Вы используйте актуальную версию скрипта.")
+			chat(string.format("Игровой помощник был успешно загружен. Вы используете актуальную версию ({HEX}%s{}).", thisScript().version))
 
 			if versions["NPA-GREEN"]["version"] ~= configuration["DOCUMENTS"]["version"] then
 				local ip = sampGetCurrentServerAddress()
@@ -9199,7 +9591,7 @@ function checking_relevance_versions_and_files()
 							local day = math.floor((value["subscription"] - os.time()) / 3600 / 24)
 							if day > 0 then
 								local date = os.date("%d.%m.%Y", value["subscription"])
-								chat(("Вы авторизовались как %sпользователь{}, ваш профиль верифицирован до {HEX}%s{} ({HEX}%s{} дней)."):format(value["color"], date, day))
+								chat(("Вы авторизовались как %s%s{}, профиль верифицирован до {HEX}%s{} ({HEX}%s{} дней)."):format(value["color"], string.nlower(u8:decode(value["rang"])), date, day))
 								player_status = value["rangNumber"]
 							else
 								chat("Верификация вашего профиля истекла, обратитесь к разработчику для её продления.")
@@ -9207,7 +9599,13 @@ function checking_relevance_versions_and_files()
 						end
 					end
 				end
+
+				if player_status == 0 then
+					chat("Ваш профиль не верифицирован, определённая часть функционала вам недоступна.")
+				end
 			end
+
+			chat("Хотите что-то изменить или добавить в помощник? Пишите в личные сообщения {HEX}vk.com/wojciechk{}.")
 		else
 			local file = https.request(versions["MAIN"]["url"])
 			if file then
@@ -9227,7 +9625,6 @@ function speller(text)
 	return result and decodeJson(result)
 end
 -- !https
-
 
 
 
