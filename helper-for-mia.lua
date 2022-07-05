@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.5")
+script_version("0.4.5.1")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
@@ -1206,6 +1206,12 @@ local ti_low_action = {
 
 -- global value
 local update_log = {
+	{
+		"hotfix 0.4.5.1",
+		{
+			u8"Исправлены некоторые ошибки."
+		}
+	},
 	{
 		"version 0.4.5",
 		{
@@ -4324,7 +4330,7 @@ function th_helper_assistant()
 				{
 					["title"] = "LOCK",
 					["callback"] = function() 
-						if not test_distance(input["vehicle_handle"], 25, true) then return false end
+						if not test_distance(input["vehicle_handle"], 20, true) then return false end
 
 						if t_smart_vehicle["vehicle"][input["vehicle_id"]] then
 						    local word = getCarDoorLockStatus(input["vehicle_handle"]) == 0 and "закрыто" or "открыто"
@@ -4346,8 +4352,8 @@ function th_helper_assistant()
 						    })
 						end
 					end,
-					["distance"] = 25,
-					["color"] = (input["distance"] > 25) and 0xFFA0A0A0 or nil
+					["distance"] = 20,
+					["color"] = (input["distance"] > 20) and 0xFFA0A0A0 or nil
 				},
 				{
 					["title"] = "FIX",
@@ -4448,7 +4454,7 @@ function th_helper_assistant()
 				if not configuration["MAIN"]["settings"]["normal_speedometer_update"] then return false end
 				if not isCharSittingInAnyCar(playerPed) then return false end
 				
-				if not (t_smart_vehicle["speedometr_id"] or sampTextdrawIsExists(t_smart_vehicle["speedometr_id"])) then
+				if not (t_smart_vehicle["speedometr_id"] and sampTextdrawIsExists(t_smart_vehicle["speedometr_id"])) then
 					for textdraw_id = 0, 3000 do
 						if sampTextdrawIsExists(textdraw_id) then
 							if string.match(sampTextdrawGetString(textdraw_id), "Fuel") then
@@ -5048,7 +5054,7 @@ function command_st(parametrs)
 		if tonumber(hour) >= 0 and tonumber(hour) <= 23 and tonumber(minute) >= 0 and tonumber(minute) < 60 then
 			patch_samp_time_set(true)
 			t_static_time = { hour, minute, true }
-			chat("Вы изменили игровое время на {HEX}" .. hour .. "{} часов, {HEX}" .. min .. "{} минут.")
+			chat("Вы изменили игровое время на {HEX}" .. hour .. "{} часов, {HEX}" .. minute .. "{} минут.")
 		else
 			patch_samp_time_set(false)
 			t_static_time = { os.date("%H"), os.date("%M"), false }
@@ -9596,7 +9602,7 @@ function checking_relevance_versions_and_files()
 							else
 								chat("Верификация вашего профиля истекла, обратитесь к разработчику для её продления.")
 							end
-						end
+						end 
 					end
 				end
 
