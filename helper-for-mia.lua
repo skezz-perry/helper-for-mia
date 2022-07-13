@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.5.1")
+script_version("0.4.5.2")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
@@ -28,7 +28,7 @@ imgui.HotKey = mimgui_addons.HotKey
 local function configuration_file(directory, filename, template)
 	if type(directory) ~= "string" then return false, "CF-F1" end
 	if type(filename) ~= "string" then return false, "CF-F2" end
-	if type(template) ~= "table" then return false, "CF-F3" end
+	if type(template) ~= "table" then return false, "CF-F3" end 
 	if not doesDirectoryExist(directory) then createDirectory(directory) end
 
 	local temp = xconf.new(string.format("%s//%s.json", directory, filename))
@@ -65,7 +65,7 @@ local function configuration_save(configuration, unloading)
 		local result, code = value["xconf"]:set(configuration[value["configuration"]] or value["template"])
 		if unloading then value["xconf"]:close() end
 	end return true
-end
+end 
 
 local configuration = {
 	["directory"] = "moonloader//config//Helper for MIA",
@@ -101,7 +101,7 @@ local configuration = {
 							["status"] = true,["variations"] = {
 								{ u8"/me удерживая дубинку в руке, размахнулся и нанёс удар по нарушителю." },
 								{ u8"/me снял дубинку с пояса и нанёс удар достаточной силы, чтобы оглушить подозреваемого." }
-							}
+							} 
 						},
 						["taser"] = {
 							["status"] = true,["variations"] = {
@@ -309,7 +309,7 @@ local configuration = {
 							}
 						},
 						["su"] = {
-							["status"] = true, ["variations"] = {
+							["status"] = true, ["variations"] = { 
 								{
 									u8"/me сняв тангету с плеча, передал диспетчеру информацию о подозреваемом.",
 									u8"$wait 500",
@@ -1206,6 +1206,12 @@ local ti_low_action = {
 
 -- global value
 local update_log = {
+	{
+		"patch 0.4.5.2",
+		{
+			u8"Исправлены некоторые ошибки и повышена стабильность работы.",
+		}
+	},
 	{
 		"hotfix 0.4.5.1",
 		{
@@ -2831,7 +2837,7 @@ function()
 
 				imgui.SameLine() -- same
 
-				imgui.BeginChild("##information_about_customization", imgui.ImVec2(303, 305))
+				imgui.BeginChild("##information_about_customization", imgui.ImVec2(313, 305))
 					imgui.SetCursorPos(imgui.ImVec2(5, 8))
 					if im_toggle_button("##customization", u8"Кастомизация интерфейсов", { "MAIN", "settings", "customization" }) then
 						apply_custom_style()
@@ -2839,23 +2845,23 @@ function()
 
 					imgui.BeginGroup() -- red
 						imgui.SetCursorPos(imgui.ImVec2(6, 50))
-						if imgui.CustomButton("Indian Red", imgui.ImVec2(150, 25), imgui.ImVec4(0.8, 0.36, 0.36, 1.0)) then
+						if imgui.CustomButton("Indian Red", imgui.ImVec2(155, 25), imgui.ImVec4(0.8, 0.36, 0.36, 1.0)) then
 							im_float_color = new.float[3](0.8, 0.36, 0.36)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Crimson", imgui.ImVec2(130, 25), imgui.ImVec4(0.86, 0.08, 0.24, 1.0)) then
+						if imgui.CustomButton("Crimson", imgui.ImVec2(135, 25), imgui.ImVec4(0.86, 0.08, 0.24, 1.0)) then
 							im_float_color = new.float[3](0.86, 0.08, 0.24)
 							im_update_color()
 						end
 
 						imgui.SetCursorPos(imgui.ImVec2(6, 85))
-						if imgui.CustomButton("Light Coral", imgui.ImVec2(130, 25), imgui.ImVec4(0.94, 0.5, 0.5, 1.0)) then
+						if imgui.CustomButton("Light Coral", imgui.ImVec2(135, 25), imgui.ImVec4(0.94, 0.5, 0.5, 1.0)) then
 							im_float_color = new.float[3](0.94, 0.5, 0.5)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Fire Brick", imgui.ImVec2(150, 25), imgui.ImVec4(0.7, 0.13, 0.13, 1.0)) then
+						if imgui.CustomButton("Fire Brick", imgui.ImVec2(155, 25), imgui.ImVec4(0.7, 0.13, 0.13, 1.0)) then
 							im_float_color = new.float[3](0.7, 0.13, 0.13)
 							im_update_color()
 						end
@@ -2863,23 +2869,23 @@ function()
 
 					imgui.BeginGroup() -- green
 						imgui.SetCursorPos(imgui.ImVec2(6, 133))
-						if imgui.CustomButton("Sea Green", imgui.ImVec2(130, 25), imgui.ImVec4(0.18, 0.55, 0.34, 1.0)) then
+						if imgui.CustomButton("Sea Green", imgui.ImVec2(135, 25), imgui.ImVec4(0.18, 0.55, 0.34, 1.0)) then
 							im_float_color = new.float[3](0.18, 0.55, 0.34)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Dark Cyan", imgui.ImVec2(150, 25), imgui.ImVec4(0.0, 0.55, 0.55, 1.0)) then
+						if imgui.CustomButton("Dark Cyan", imgui.ImVec2(155, 25), imgui.ImVec4(0.0, 0.55, 0.55, 1.0)) then
 							im_float_color = new.float[3](0.0, 0.55, 0.55)
 							im_update_color()
 						end
 
 						imgui.SetCursorPos(imgui.ImVec2(6, 168))
-						if imgui.CustomButton("Light Green", imgui.ImVec2(150, 25), imgui.ImVec4(0.24, 0.48, 0.28, 1.0)) then
+						if imgui.CustomButton("Light Green", imgui.ImVec2(155, 25), imgui.ImVec4(0.24, 0.48, 0.28, 1.0)) then
 							im_float_color = new.float[3](0.24, 0.48, 0.28)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Dark Sea Green", imgui.ImVec2(130, 25), imgui.ImVec4(0.56, 0.74, 0.55, 1.0)) then
+						if imgui.CustomButton("Dark Sea Green", imgui.ImVec2(135, 25), imgui.ImVec4(0.56, 0.74, 0.55, 1.0)) then
 							im_float_color = new.float[3](0.56, 0.74, 0.55)
 							im_update_color()
 						end
@@ -2887,23 +2893,23 @@ function()
 
 					imgui.BeginGroup() -- blue
 						imgui.SetCursorPos(imgui.ImVec2(6, 216))
-						if imgui.CustomButton("Steel Blue", imgui.ImVec2(150, 25), imgui.ImVec4(0.27, 0.51, 0.71, 1.0)) then
+						if imgui.CustomButton("Steel Blue", imgui.ImVec2(155, 25), imgui.ImVec4(0.27, 0.51, 0.71, 1.0)) then
 							im_float_color = new.float[3](0.27, 0.51, 0.71)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Powder Blue", imgui.ImVec2(130, 25), imgui.ImVec4(0.69, 0.88, 0.9, 1.0)) then
+						if imgui.CustomButton("Powder Blue", imgui.ImVec2(135, 25), imgui.ImVec4(0.69, 0.88, 0.9, 1.0)) then
 							im_float_color = new.float[3](0.69, 0.88, 0.9)
 							im_update_color()
 						end
 
 						imgui.SetCursorPos(imgui.ImVec2(6, 250))
-						if imgui.CustomButton("Medium Slate Blue", imgui.ImVec2(130, 25), imgui.ImVec4(0.48, 0.41, 0.93, 1.0)) then
+						if imgui.CustomButton("Medium Slate Blue", imgui.ImVec2(135, 25), imgui.ImVec4(0.48, 0.41, 0.93, 1.0)) then
 							im_float_color = new.float[3](0.48, 0.41, 0.93)
 							im_update_color()
 						end imgui.SameLine() -- same
 
-						if imgui.CustomButton("Turquoise", imgui.ImVec2(150, 25), imgui.ImVec4(0.25, 0.88, 0.82, 1.0)) then
+						if imgui.CustomButton("Turquoise", imgui.ImVec2(155, 25), imgui.ImVec4(0.25, 0.88, 0.82, 1.0)) then
 							im_float_color = new.float[3](0.25, 0.88, 0.82)
 							im_update_color()
 						end
@@ -3500,6 +3506,14 @@ function main()
 					if difference > 5 then lua_thread.create(function() was_pause = true wait(1500) chat(string.format("Вы находились в AFK {HEX}%d{} секунд(-ы).", difference)) was_pause = false end) end
 				end
 			end
+		elseif msg == wm.WM_RBUTTONDOWN then 
+			if isKeyCheckAvailable() then
+				create_assistant_thread("fast_interaction_2")
+			end
+		elseif msg == wm.WM_RBUTTONUP then
+			if isKeyCheckAvailable() then
+				destroy_assistant_thread("fast_interaction_2")
+			end
 		elseif msg == 0x100 then
 			if wparam == vkeys.VK_ESCAPE then
 				local was_found_active_menu = false
@@ -3549,19 +3563,25 @@ function main()
 				end
 			elseif wparam == vkeys.VK_Y then
 				if t_accept_the_offer then
-					if isKeyCheckAvailable() then
-						consumeWindowMessage(true, true)
-						t_accept_the_offer[3]()
+					if os.clock() - t_accept_the_offer[2] > 45 then 
 						t_accept_the_offer = nil
-						destroy_assistant_thread("accept_offer")
+					else
+						if isKeyCheckAvailable() then
+							consumeWindowMessage(true, true)
+							t_accept_the_offer[3]()
+							t_accept_the_offer = nil
+						end
 					end
 				end
 			elseif wparam == vkeys.VK_N then
 				if t_accept_the_offer then
-					if isKeyCheckAvailable() then
-						consumeWindowMessage(true, true)
+					if os.clock() - t_accept_the_offer[2] > 45 then 
 						t_accept_the_offer = nil
-						destroy_assistant_thread("accept_offer")
+					else
+						if isKeyCheckAvailable() then
+							consumeWindowMessage(true, true)
+							t_accept_the_offer = nil
+						end
 					end
 				end
 			end
@@ -3786,7 +3806,10 @@ function main()
 			if result then
 				local result, player_id = sampGetPlayerIdByCharHandle(char)
 				if result then
-					if targeting_player ~= player_id then targeting_player = player_id end
+					if targeting_player ~= player_id then 
+						if targeting_vehicle then targeting_vehicle = nil end
+						targeting_player = player_id
+					end
 				end
 			end
 		end
@@ -4219,7 +4242,6 @@ function th_helper_assistant()
 
 	function create_offer(index, callback)
 		t_accept_the_offer = { index, os.clock(), callback }
-		create_assistant_thread("accept_offer")
 	end
 
 	function create_quick_menu(index, input)
@@ -4300,7 +4322,7 @@ function th_helper_assistant()
 					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
 				},
 				{
-					["title"] = u8"ОБЫЧНОЕ МЕНЮ",
+					["title"] = u8"МЕНЮ",
 					["callback"] = function()
 						t_quick_menu = false
 					end
@@ -4366,7 +4388,22 @@ function th_helper_assistant()
 					["color"] = (input["distance"] > 10) and 0xFFA0A0A0 or nil
 				},
 				{
-					["title"] = u8"ОБЫЧНОЕ МЕНЮ",
+					["title"] = u8"МЕГАФОН",
+					["callback"] = function(x, y, z)
+						if not test_distance(input["vehicle_handle"], 55, true) then return false end
+						local player_handle = getDriverOfCar(input["vehicle_handle"])
+						local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
+						if result then
+							local vehicle_model = getCarModel(input["vehicle_handle"])
+							command_megafon(player_id, vehicle_model)
+							return true
+						end
+					end,
+					["distance"] = 55,
+					["color"] = (input["distance"] > 55) and 0xFFA0A0A0 or nil
+				},
+				{
+					["title"] = u8"МЕНЮ",
 					["callback"] = function()
 						t_quick_menu = false
 					end
@@ -4421,14 +4458,6 @@ function th_helper_assistant()
 					end
 				end
 			end,
-			["accept_offer"] = function()
-				if t_accept_the_offer then
-					if os.clock() - t_accept_the_offer[2] > 45 then 
-						t_accept_the_offer = nil
-						destroy_assistant_thread("accept_offer")
-					end
-				end
-			end,
 			["procedures_performed"] = function()
 				if not procedures_performed then 
 					destroy_assistant_thread("procedures_performed")
@@ -4454,7 +4483,7 @@ function th_helper_assistant()
 				if not configuration["MAIN"]["settings"]["normal_speedometer_update"] then return false end
 				if not isCharSittingInAnyCar(playerPed) then return false end
 				
-				if not (t_smart_vehicle["speedometr_id"] and sampTextdrawIsExists(t_smart_vehicle["speedometr_id"])) then
+				if not t_smart_vehicle["speedometr_id"] or not sampTextdrawIsExists(t_smart_vehicle["speedometr_id"]) then
 					for textdraw_id = 0, 3000 do
 						if sampTextdrawIsExists(textdraw_id) then
 							if string.match(sampTextdrawGetString(textdraw_id), "Fuel") then
@@ -4597,11 +4626,13 @@ function th_helper_assistant()
 						end
 					end return false 
 				end
+
 				if t_mimgui_render["quick_menu"][0] then return false end
 				if not configuration["MAIN"]["settings"]["fast_interaction"] then return false end
-
 				if isCharSittingInAnyCar(playerPed) then return false end
-				if getCurrentCharWeapon(playerPed) ~= 0 then return false end
+
+				local player_weapon = getCurrentCharWeapon(playerPed)
+				if player_weapon ~= 0 then return false end
 				
 				local x1, y1, z1 = getActiveCameraCoordinates()
 				local x2, y2, z2 = getActiveCameraPointAt()
@@ -4610,16 +4641,16 @@ function th_helper_assistant()
 				local radius = 5
 				local vector = { ["x"] = x + radius * math.cos(angle), ["y"] = y + radius * math.sin(angle), ["z"] = z + radius * (z2 - z1) }
 
-				local result, colpoint = processLineOfSight(x, y, z, vector["x"], vector["y"], vector["z"], true, true, false, true, true, true, true)
+				local result, colpoint = processLineOfSight(x, y, z, vector["x"], vector["y"], vector["z"], true, true, true, true, true, true, true)
 				if not result then return false end
 
 				if t_entity_marker[2] then
-					if t_entity_marker[2] ~= colpoint["entity"] then
+					if t_entity_marker[2] ~= colpoint["entity"] then 
 					    removeBlip(t_entity_marker[1])
 					    t_entity_marker = { false, false }
 					    targeting_vehicle = false
 					end
-				end
+				end 
 
 				if colpoint["entityType"] == 2 then 
 					local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
@@ -4656,7 +4687,7 @@ function th_helper_assistant()
 			end,
 			["static_time"] = function()
 				if not t_static_time[3] then
-					if math.fmod(os.clock(), 60) == 0 then
+					if math.fmod(math.ceil(os.clock()), 60) == 0 then
 						t_static_time = { os.date("%H"), os.date("%M"), false }
 					end
 				end
@@ -4694,7 +4725,7 @@ function th_helper_assistant()
 		for index, value in ipairs(assistant_threads) do
 			if value["type"] == __type then
 				table.remove(assistant_threads, index)
-				break
+				break 
 			end
 		end
 	end
@@ -4702,12 +4733,13 @@ function th_helper_assistant()
 
 	create_assistant_thread("normal_speedometer_update")
 	create_assistant_thread("fast_interaction")
-	create_assistant_thread("fast_interaction_2")
-	create_assistant_thread("static_time")
+	create_assistant_thread("static_time") 
 
 	while true do wait(0)
-		local x, y, z = getCharCoordinates(playerPed)
-		for index, value in ipairs(assistant_threads) do value["callback"](x, y, z) end
+		if isPlayerPlaying(PLAYER_HANDLE) then 
+			local x, y, z = getCharCoordinates(playerPed)
+			for index, value in ipairs(assistant_threads) do value["callback"](x, y, z) end
+		end
 	end
 end
 
@@ -6791,7 +6823,7 @@ function sampIsPoliceOfficer(player_handle)
 			return string.find(skin, "%-" .. getCharModel(player_handle) .. "%-")
 		else
 			if sampGetPlayerArmor(player_id) > 0 then
-				local is = {[4278220149] = true, [4288230246] = true, [4290445312] = true, [4291624704] = true, [4288243251] = true}
+				local is = { [4278220149] = true, [4288230246] = true, [4290445312] = true, [4291624704] = true, [4288243251] = true }
 				if not is[player_color] then
 					return true
 				end
@@ -6812,7 +6844,7 @@ function sampIsPoliceOfficerById(player_id)
 			return string.find(skin, "%-" .. getCharModel(player_handle) .. "%-")
 		else
 			if sampGetPlayerArmor(player_id) > 0 then
-				local is = {[4278220149] = true, [4288230246] = true, [4290445312] = true, [4291624704] = true, [4288243251] = true}
+				local is = { [4278220149] = true, [4288230246] = true, [4290445312] = true, [4291624704] = true, [4288243251] = true }
 				if not is[player_color] then
 					return true
 				end
@@ -8095,7 +8127,7 @@ function clear_animation()
 end
 
 function smart_ads(input)
-	local half_weights = {"прод", "купл", "цена", "бюдже", "свободн", "догов"} -- половинные слова
+	local half_weights = {"прод", "купл", "цена", "бюдже", "свобод", "догов"} -- половинные слова
 			
 	local input_pattern = string.nlower(string.gsub(u8:decode(str(input)), "%p+", " ")) -- отсекаем все знаки
 	local t_input_pattern = {}
@@ -8108,7 +8140,7 @@ function smart_ads(input)
 
 		local len = string.len(word)
 		if len > 2 then
-			if len > 6 then word = string.sub(word, 1, len - 3) end
+			if len > 5 then word = string.sub(word, 1, len - 1) end
 			table.insert(t_input_pattern, { word, weight }) 
 		end
 	end
@@ -8417,17 +8449,6 @@ function sampev.onServerMessage(color, text)
 				configuration["STATISTICS"]["police"]["taser"] = configuration["STATISTICS"]["police"]["taser"] + 1
 				if not need_update_configuration then need_update_configuration = os.clock() end
 			end
-		elseif string.match(text, "(.+) принимает Ваше предложение") then -- accept
-			if invite_player_id then
-				if tonumber(invite_rang) > 1 then
-					lua_thread.create(function()
-						for i = 2, tonumber(invite_rang) do
-							sampSendChat(string.format("/rang %s +", invite_player_id))
-							wait(900)
-						end invite_player_id, invite_rang = nil, nil
-					end)
-				end
-			end
 		elseif string.match(text, "Вы использовали аптечку. Здоровье пополнено на 60 единиц") then -- use aidkit
 			if configuration["MAIN"]["settings"]["aid_timer"] then
 				local is_player_use_aidkit = false
@@ -8577,6 +8598,17 @@ function sampev.onServerMessage(color, text)
 			end)
 		elseif string.match(text, "Вы выбрали заказ. Отправляйтесь к месту загрузки") then -- tk
 			product_delivery_status = 1
+		elseif string.match(text, "(.+) принимает Ваше предложение") then -- accept
+			if invite_player_id then
+				if tonumber(invite_rang) > 1 then
+					lua_thread.create(function()
+						for i = 2, tonumber(invite_rang) do
+							sampSendChat(string.format("/rang %s +", invite_player_id))
+							wait(900)
+						end invite_player_id, invite_rang = nil, nil
+					end)
+				end
+			end
 		end
 	elseif color == 865730559 then
 		if string.match(text, "Входящий звонок . Номер. (%d+) {FFCD00}. Вызывает (.+)") then -- incoming call
@@ -9060,46 +9092,46 @@ function sampev.onShowDialog(dialogId, style, title, button1, button2, text)
 				return {dialogId, style, title, button1, button2, text}
 			end
 		end
-	else
-		if last_send_command then
-			if os.clock() - last_send_command["time"] < 0.45 then
-				if style == 2 or style == 5 then
-					local lines = 0
-					for line in string.gmatch(text, "[^\n]+") do lines = lines + 1 end
+	end
 
-					if lines > 0 then
-						for index, value in ipairs(last_send_command["indexes"]) do
-							if value[2] == false then
-								if value[1] <= lines then
-									local fix = (style == 2) and value[1] - 1 or value[1]
-									sampSendDialogResponse(dialogId, 1, fix)
-									last_send_command["time"] = os.clock()
-									value[2] = true
-									return false
-								else
-									chat(string.format("Строка под индексом #{HEX}%s{} не была найдена.", value[1]))
-								end
+	if last_send_command then
+		if os.clock() - last_send_command["time"] < 0.45 then
+			if style == 2 or style == 5 then
+				local lines = 0
+				for line in string.gmatch(text, "[^\n]+") do lines = lines + 1 end
+
+				if lines > 0 then
+					for index, value in ipairs(last_send_command["indexes"]) do
+						if value[2] == false then
+							if value[1] <= lines then
+								local fix = (style == 2) and value[1] - 1 or value[1]
+								sampSendDialogResponse(dialogId, 1, fix)
+								last_send_command["time"] = os.clock()
+								value[2] = true
+								return false
+							-- else
+								-- chat(string.format("Строка под индексом #{HEX}%s{} не была найдена.", value[1]))
 							end
 						end
-					else last_send_command = false end
+					end
 				else last_send_command = false end
 			else last_send_command = false end
-		end
+		else last_send_command = false end
+	end
 
-		if string.match(title, "Авторизация") then
-			entered_password = dialogId
-			if not string.match(text, "Неверный пароль") and not string.match(text, "PIN") then
-				local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
-				if result then
-					local nickname = sampGetPlayerName(player_id)
-					local nickname = string.gsub(nickname, "%[.+%]", "")
-					local ip, port = sampGetCurrentServerAddress()
-					local ip_adress = string.format("%s:%s", ip, port)
-					if configuration["MANAGER"][ip_adress] and configuration["MANAGER"][ip_adress][nickname] then
-						local password = configuration["MANAGER"][ip_adress][nickname]["password"]
-						sampSendDialogResponse(dialogId, 1, 1, password)
-						return false
-					end
+	if string.match(title, "Авторизация") then
+		entered_password = dialogId
+		if not string.match(text, "Неверный пароль") and not string.match(text, "PIN") then
+			local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+			if result then
+				local nickname = sampGetPlayerName(player_id)
+				local nickname = string.gsub(nickname, "%[.+%]", "")
+				local ip, port = sampGetCurrentServerAddress()
+				local ip_adress = string.format("%s:%s", ip, port)
+				if configuration["MANAGER"][ip_adress] and configuration["MANAGER"][ip_adress][nickname] then
+					local password = configuration["MANAGER"][ip_adress][nickname]["password"]
+					sampSendDialogResponse(dialogId, 1, 1, password)
+					return false
 				end
 			end
 		end
@@ -9228,20 +9260,24 @@ function sampev.onSendCommand(parametrs)
 				end
 			else
 				if string.match(value, "(%d+)") then -- типа фаст проклик диалога 
-					last_send_command = {
-						["send"] = command,
-						["time"] = os.clock(), 
-						["indexes"] = {}
-					}
+					local ignore = { ["team"] = 1 }
+					if not ignore[command] then
+						last_send_command = {
+							["send"] = command,
+							["time"] = os.clock(), 
+							["indexes"] = {}
+						}
 
-					if command == "anim" then
-						if value == "0" or value == "79" then
-							table.insert(last_send_command["indexes"], { 79, false })
-							return { "/anim" }
-						end
-					else
-						for index in string.gmatch(value, "(%d+)") do
-							table.insert(last_send_command["indexes"], { tonumber(index), false })
+						if command == "anim" then
+							if value == "0" or value == "79" then
+								table.insert(last_send_command["indexes"], { 79, false })
+								last_send_command["time"] = os.clock() + 1.5
+								return { "/anim" }
+							end
+						else
+							for index in string.gmatch(value, "(%d+)") do
+								table.insert(last_send_command["indexes"], { tonumber(index), false })
+							end
 						end
 					end
 				end
