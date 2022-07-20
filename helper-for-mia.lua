@@ -1,10 +1,10 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.5.2")
+script_version("0.4.6")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
-local vkeys = require "vkeys"
+local vkeys = require "vkeys" 
 local rkeys = require "rkeys"
 local imgui, ffi = require "mimgui", require "ffi"
 local mimgui_addons = require "mimgui-addons"
@@ -554,6 +554,13 @@ local configuration = {
 									u8"/su {1} {2} GNSS-трекер"
 								}
 							}
+						},
+						["unmask"] = {
+							["status"] = true, ["variations"] = {
+								{
+									u8"/me взявшись за маску, что находилась на лице $rpname.{1}, снял её."
+								}
+							}
 						}
 					},
 					["female"] = {
@@ -868,6 +875,13 @@ local configuration = {
 									u8"/su {1} {2} GNSS-трекер"
 								}
 							}
+						},
+						["unmask"] = {
+							["status"] = true, ["variations"] = {
+								{
+									u8"/me взявшись за маску, что находилась на лице $rpname.{1}, сняла её."
+								}
+							}
 						}
 					}
 				}
@@ -1094,7 +1108,8 @@ local configuration = {
 					["t"] = 80
 				},
 				["blacklist"] = {},
-				["customization"] = {}
+				["customization"] = {},
+				["update_stars"] = {}
 			}
 		}
 	}
@@ -1145,6 +1160,7 @@ local ti_system_commands = {
 	{ ["index"] = "hack",           ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_hack",           ["description"] = u8"Взламывает дверь дома с RP-отыгровками." },
 	{ ["index"] = "ud",             ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_ud",             ["description"] = u8"Показывает удостоверение с RP-отыгровками." },
 	{ ["index"] = "pas",            ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_pas",            ["description"] = u8"Запрашивает документы с RP-отыгровками." },
+	{ ["index"] = "unmask",         ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_unmask",         ["description"] = u8"Снимает маску с человека с RP-отыгровками." },
 	{ ["index"] = "medhelp",        ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_medhelp",        ["description"] = u8"Проводит курс платного лечения." },
 	{ ["index"] = "invite",         ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_invite",         ["description"] = u8"Принимает игрока в организацию с RP-отыгровками." },
 	{ ["index"] = "uninvite",       ["path"] = {"SYSTEM", "$sex"},  ["callback"] = "command_uninvite",       ["description"] = u8"Увольняет игрока из организации с RP-отыгровками." },
@@ -1206,6 +1222,15 @@ local ti_low_action = {
 
 -- global value
 local update_log = {
+	{
+		"version 0.4.6",
+		{
+			u8"Добавлена возможность оценки обновлений.",
+			u8"Добавлена RP-отыгровка для снятия маски с игрока (/unmask).",
+			u8"Нижние подчеркивания в никнеймах (в чате) были устранены как явление.",
+			u8"Исправлены некоторые ошибки и повышена стабильность работы.",
+		}
+	},
 	{
 		"patch 0.4.5.2",
 		{
@@ -1353,7 +1378,7 @@ local update_log = {
 			u8"Исправлена настройка расположения быстрого розыска (теперь она работает)."
 		}
 	},
-	{
+	{ 
 		"version 0.3.4",
 		{
 			u8"Еще очень много очень важных нововведений."
@@ -1361,7 +1386,7 @@ local update_log = {
 	},
 	{
 		"version 0.3.3",
-		{
+		{ 
 			u8"Очень много очень важных нововведений."
 		}
 	},
@@ -1543,6 +1568,9 @@ local open_menu_map = false
 local player_status = 0
 local fast_reconnect = false
 local targeting_vehicle = false
+local delay_take_ads
+local time_take_ads
+local current_update_scores
 
 local t_mimgui_render = {
 	["main_menu"] = new.bool(false),
@@ -1555,7 +1583,8 @@ local t_mimgui_render = {
 	["animations"] = new.bool(false),
 	["editor_quick_suspect"] = new.bool(false),
 	["tags_information"] = new.bool(false),
-	["helper_ads"] = new.bool(false)
+	["helper_ads"] = new.bool(false),
+	["update_scores"] = new.bool(false)
 }
 
 local string_found = {
@@ -1576,8 +1605,10 @@ local imgui_quick_editor_ads = new.char[256]()
 local im_role_play_action_weapon_take = new.char[512](configuration["MAIN"]["role_play_weapons"]["DESERTEAGLE"]["take"])
 local im_role_play_action_weapon_remove = new.char[512](configuration["MAIN"]["role_play_weapons"]["DESERTEAGLE"]["remove"])
 local im_float_color = configuration["MAIN"]["customization"]["Button"] and new.float[3](configuration["MAIN"]["customization"]["Button"]["r"], configuration["MAIN"]["customization"]["Button"]["g"], configuration["MAIN"]["customization"]["Button"]["b"]) or new.float[3]()
-local im_input_command = new.char[256]()
+local im_input_command = new.char[256]() 
 local im_input_parametrs = new.int(0)
+local im_update_scores = new.int(0)
+local im_update_text = new.char[1000]()
 
 local t_last_requirement = {}
 local t_need_to_purchase = {}
@@ -1890,6 +1921,8 @@ local t_animations = {
 -- !local value
 
 -- const
+local telegram_link = "https://api.telegram.org/bot5366145378:AAGvsE97W-e_fgpC7XosQJGovLdwhJ0DnTM/sendMessage?chat_id=766017841&text="
+
 local abbreviated_codes = {
 	{ "cod 0", "Говорит $m, CODE 0, требуется срочная помощь в район $p, недоступен.", "CODE 0", function() patrol_status["status"] = "0" end },
 	{ "cod 1", "Говорит $m, CODE 1, требуется помощь в район $p, недоступен.", "CODE 1", function() patrol_status["status"] = "1" end },
@@ -2019,6 +2052,65 @@ imgui.OnInitialize(function()
 	register_quick_menu()
 end)
 
+
+imgui.OnFrame(function() return t_mimgui_render["update_scores"][0] end,
+function()
+	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver)
+	imgui.SetNextWindowSize(imgui.ImVec2(350, 200))
+	imgui.Begin("##update_scores", t_mimgui_render["update_scores"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+
+		imgui.BeginChild("##update-version-info", imgui.ImVec2(90, 31)) -- версия
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.Button(update_log[current_update_scores][1], imgui.ImVec2(80, 21))
+		imgui.EndChild()
+
+		imgui.SameLine() -- same
+
+		imgui.BeginChild("##update-scores", imgui.ImVec2(185, 31)) -- оценка
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+
+			imgui.CustomButton(string.format("%s##update_scores", faicons["ICON_STAR"]), imgui.ImVec2(25, 21))
+			imgui.SameLine(nil, 5) -- same
+
+			imgui.PushItemWidth(145)
+			imgui.SliderInt("##update_scores_number", im_update_scores, 0, 5)
+			imgui.Hint("##update-scores-number-hint", u8"Оцените это обновление от 0 до 5 баллов.")
+		imgui.EndChild()
+
+		imgui.SameLine() -- same
+
+		imgui.BeginChild("##update-send", imgui.ImVec2(35, 31)) -- отправка
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			if imgui.Button(faicons["ICON_PAPER_PLANE"], imgui.ImVec2(25, 21)) then 
+				configuration["MAIN"]["update_stars"][current_update_scores] = im_update_scores[0]
+
+				local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+				local player_nickname = sampGetPlayerName(player_id)
+
+				local send = {
+					u8(string.format("%s (version %s, serial %s):", player_nickname, thisScript().version, player_serial_number)),
+					u8(string.format("Пользователь оценил обновление %s.", update_log[current_update_scores][1])),
+					u8(string.format("Оценка: %s балл(-ов)", im_update_scores[0])),
+					string.format(u8"Комментарий: %s", string.match(str(im_update_text), "(%S+)") and str(im_update_text) or "nil")
+				}
+
+				send_bot(table.concat(send, "\n"))
+				chat("Ваша оценка была успешно отправлена.")
+
+				t_mimgui_render["update_scores"][0] = false
+				current_update_scores = false
+				return false
+			end
+			imgui.Hint("##update-scores-send-hint", u8"Нажмите, чтобы отправить оценку.")
+		imgui.EndChild()
+
+		imgui.BeginChild("##update-text", imgui.ImVec2(330, 123)) -- комментарий
+			imgui.SetCursorPos(imgui.ImVec2(5, 5))
+			imgui.InputTextMultiline("##update-text-input", im_update_text, 1000, imgui.ImVec2(320, 113))
+			imgui.Hint("##update-scores-text-hint", u8"Здесь вы можете оставить свой комментарий.")
+		imgui.EndChild()
+	imgui.End()
+end)
 
 imgui.OnFrame(function() return t_mimgui_render["animations"][0] end, -- анимации
 function(player)
@@ -2193,9 +2285,9 @@ function(player)
 			end
 		imgui.EndChild()
 
-		imgui.BeginChild("##реестр.2", imgui.ImVec2(440, 100))
+		imgui.BeginChild("##реестр.2", imgui.ImVec2(440, 105))
 			if #t_quick_editor_ads == 0 then
-				imgui.SetCursorPosY(30) -- fix Y
+				imgui.SetCursorPosY(45) -- fix Y
 				imgui.CenterText(u8"Не найдено ни одного объявления :(")
 			else
 				imgui.SetCursorPosY(5) -- fix Y
@@ -2602,8 +2694,25 @@ function()
 			end
 
 			for index, value in ipairs(update_log) do
-				imgui.Center(100) -- fix position
-				imgui.Button(value[1], imgui.ImVec2(100, 20))
+				if not configuration["MAIN"]["update_stars"][index] then
+					imgui.Center(125) -- fix position
+
+					imgui.Button(value[1], imgui.ImVec2(100, 20)) 
+					imgui.SameLine(nil, 5) -- same
+
+					if imgui.Button(string.format("%s##%s", faicons["ICON_STAR"], index), imgui.ImVec2(20, 20)) then
+						current_update_scores = index
+						t_mimgui_render["update_scores"][0] = true
+					end
+					imgui.Hint(string.format("##stars-hint-%s", index), u8"Нажмите, чтобы оценить это обновление.")
+				else
+					imgui.Center(135) -- fix position
+
+					imgui.Button(value[1], imgui.ImVec2(100, 20)) 
+					imgui.SameLine(nil, 5) -- same
+
+					imgui.CustomButton(string.format("%s %s##%s", configuration["MAIN"]["update_stars"][index], faicons["ICON_STAR"], index), imgui.ImVec2(30, 20))
+				end
 
 				imgui.Center(value[3]) -- fix position
 				imgui.BeginChild(string.format("##update_log-%s", index), imgui.ImVec2(value[3], value[4]))
@@ -3748,7 +3857,6 @@ function main()
 	end
 
 	-- потекли потоки
-	-- lua_thread.create(th_dynamic_time_update)
 	lua_thread.create(th_render_player_text)
 	lua_thread.create(th_helper_assistant)
 	lua_thread.create(th_smart_suspects)
@@ -4174,9 +4282,19 @@ function t_stroboscopes()
 end
 
 function th_helper_assistant()
-	local assistant_threads = {}
 	local last_update_database = os.clock()
 	local font = renderCreateFont("tahoma", 8, font_flag.BOLD + font_flag.SHADOW)
+
+	local assistant_threads = {
+		["quick_open_door"] = false,
+		["map_marker"] = false,
+		["procedures_performed"] = false,
+		["normal_speedometer_update"] = false,
+		["fast_interaction"] = false,
+		["fast_interaction_2"] = false,
+		["static_time"] = false,
+		["time_take_ads"] = false,
+	}
 
 	local quick_open_door = {
 		{ ["position"] = { ["x"] = 1701.126, ["y"] = 943.875, ["z"] = 1030.426 }, ["callback"] = function() sampSendChat("/fbi") end },
@@ -4418,8 +4536,27 @@ function th_helper_assistant()
 	end
 
 	function create_assistant_thread(index)
-		local threads = {
-			["quick_open_door"] = function(x, y, z)
+		if index then
+			assistant_threads[index] = true
+		end
+	end
+
+	function destroy_assistant_thread(index)
+		if index then
+			assistant_threads[index] = false
+		end
+	end
+	-- 
+
+	create_assistant_thread("normal_speedometer_update")
+	create_assistant_thread("fast_interaction")
+	create_assistant_thread("static_time") 
+
+	while true do wait(0)
+		if isPlayerPlaying(PLAYER_HANDLE) then 
+			local x, y, z = getCharCoordinates(playerPed)
+			
+			if assistant_threads["quick_open_door"] then
 				if configuration["MAIN"]["settings"]["quick_open_door"] then
 					for index, value in ipairs(quick_open_door) do
 						local distance = getDistanceBetweenCoords3d(x, y, z, value["position"]["x"], value["position"]["y"], value["position"]["z"])
@@ -4436,8 +4573,9 @@ function th_helper_assistant()
 						end
 					end
 				end
-			end,
-			["map_marker"] = function(x, y, z)
+			end
+
+			if assistant_threads["map_marker"] then
 				for index, value in ipairs(t_map_markers) do
 					if not value["marker"] then
 						value["marker"] = addBlipForCoord(value["position"]["x"], value["position"]["y"], value["position"]["z"])
@@ -4457,166 +4595,168 @@ function th_helper_assistant()
 						destroy_map_marker({ ["x"] = index })
 					end
 				end
-			end,
-			["procedures_performed"] = function()
+			end
+
+			if assistant_threads["procedures_performed"] then
 				if not procedures_performed then 
 					destroy_assistant_thread("procedures_performed")
-					return false 
-				end
-
-				for index, value in ipairs(procedures_performed) do
-					if os.time() - value["time"] > 60 then
-						chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], value["nickname"]))
-						local player_id = sampGetPlayerIdByNickname(value["nickname"])
-
-						if player_id and isPlayerConnected(player_id) then
-							chat("Если вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
-							t_accept_the_offer = {3, os.clock(), player_id}
-						end
-
-						table.remove(procedures_performed, index)
-						if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
-					end
-				end
-			end,
-			["normal_speedometer_update"] = function()
-				if not configuration["MAIN"]["settings"]["normal_speedometer_update"] then return false end
-				if not isCharSittingInAnyCar(playerPed) then return false end
-				
-				if not t_smart_vehicle["speedometr_id"] or not sampTextdrawIsExists(t_smart_vehicle["speedometr_id"]) then
-					for textdraw_id = 0, 3000 do
-						if sampTextdrawIsExists(textdraw_id) then
-							if string.match(sampTextdrawGetString(textdraw_id), "Fuel") then
-								t_smart_vehicle["speedometr_id"] = textdraw_id
-								break
-							end
-						end
-					end
 				else
-					local vehicle_handle = storeCarCharIsInNoSave(playerPed)
-					local vehicle_speed = getCarSpeed(vehicle_handle) * 2.02
-					local textdraw_text = sampTextdrawGetString(t_smart_vehicle["speedometr_id"])
-					sampTextdrawSetString(t_smart_vehicle["speedometr_id"], string.gsub(textdraw_text, "%d+_km/h", string.format("%d_km/h", vehicle_speed)))
+					for index, value in ipairs(procedures_performed) do
+						if os.time() - value["time"] > 60 then
+							chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], value["nickname"]))
+							local player_id = sampGetPlayerIdByNickname(value["nickname"])
 
-					if configuration["MAIN"]["settings"]["low_fuel_level_notification"] then
-						if not t_smart_vehicle["fuel"]["last_update"] then
-							t_smart_vehicle["fuel"]["last_update"] = 0
-						else
-							if os.clock() - t_smart_vehicle["fuel"]["last_update"] > 5 then
-								if string.match(textdraw_text, "Fuel_(%d+)") then
-									local vehicle_fuel = tonumber(string.match(textdraw_text, "Fuel_(%d+)"))
-									if vehicle_fuel and vehicle_fuel < 30 then
-										if not t_smart_vehicle["fuel"]["last_notification"] then
-											t_smart_vehicle["fuel"]["last_notification"] = 0
-										else
-											if os.clock() - t_smart_vehicle["fuel"]["last_notification"] > 180 then
-												chat("Уровень топлива в вашем транспортом средстве {HEX}менее 30 литров{}.")
-												chat("Чтобы найти ближайщую АЗС используйте команду {HEX}/fuel{}.")
-												t_smart_vehicle["fuel"]["last_notification"] = os.clock()
-											end
-										end
+							if player_id and isPlayerConnected(player_id) then
+								chat("Если вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
+								t_accept_the_offer = {3, os.clock(), player_id}
+							end
+
+							table.remove(procedures_performed, index)
+							if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
+						end
+					end
+				end
+			end
+
+			if assistant_threads["normal_speedometer_update"] then
+				if configuration["MAIN"]["settings"]["normal_speedometer_update"] then
+					if isCharSittingInAnyCar(playerPed) then 
+						if not t_smart_vehicle["speedometr_id"] or not sampTextdrawIsExists(t_smart_vehicle["speedometr_id"]) then
+							for textdraw_id = 0, 3000 do
+								if sampTextdrawIsExists(textdraw_id) then
+									if string.match(sampTextdrawGetString(textdraw_id), "Fuel") then
+										t_smart_vehicle["speedometr_id"] = textdraw_id
+										break
 									end
-								end t_smart_vehicle["fuel"]["last_update"] = os.clock()
+								end
+							end
+						else
+							local vehicle_handle = storeCarCharIsInNoSave(playerPed)
+							local vehicle_speed = getCarSpeed(vehicle_handle) * 2.02
+							local textdraw_text = sampTextdrawGetString(t_smart_vehicle["speedometr_id"])
+							sampTextdrawSetString(t_smart_vehicle["speedometr_id"], string.gsub(textdraw_text, "%d+_km/h", string.format("%d_km/h", vehicle_speed)))
+
+							if configuration["MAIN"]["settings"]["low_fuel_level_notification"] then
+								if not t_smart_vehicle["fuel"]["last_update"] then
+									t_smart_vehicle["fuel"]["last_update"] = 0
+								else
+									if os.clock() - t_smart_vehicle["fuel"]["last_update"] > 5 then
+										if string.match(textdraw_text, "Fuel_(%d+)") then
+											local vehicle_fuel = tonumber(string.match(textdraw_text, "Fuel_(%d+)"))
+											if vehicle_fuel and vehicle_fuel < 30 then
+												if not t_smart_vehicle["fuel"]["last_notification"] then
+													t_smart_vehicle["fuel"]["last_notification"] = 0
+												else
+													if os.clock() - t_smart_vehicle["fuel"]["last_notification"] > 180 then
+														chat("Уровень топлива в вашем транспортом средстве {HEX}менее 30 литров{}.")
+														chat("Чтобы найти ближайщую АЗС используйте команду {HEX}/fuel{}.")
+														t_smart_vehicle["fuel"]["last_notification"] = os.clock()
+													end
+												end
+											end
+										end t_smart_vehicle["fuel"]["last_update"] = os.clock()
+									end
+								end
 							end
 						end
 					end
 				end
-			end,
-			["fast_interaction"] = function(x, y, z)
+			end
+
+			if assistant_threads["fast_interaction"] then
 				if not global_samp_cursor_status then 
 					if not isKeyDown(VK_RBUTTON) then
 						if t_entity_marker[1] then 
 						    removeBlip(t_entity_marker[1]) 
 						    t_entity_marker = { false, false }
 						end
-					end return false 
-				end
-				if t_mimgui_render["quick_menu"][0] then return false end
-				if not configuration["MAIN"]["settings"]["fast_interaction"] then return false end
+					end
+				else
+					if not t_mimgui_render["quick_menu"][0] then
+						if configuration["MAIN"]["settings"]["fast_interaction"] then
+							local sx, sy = getCursorPos()
+							local w, h = getScreenResolution()
+							if (sx > 0 and sy > 0 and sx < w and sy < h) then
+								local cursor_x, cursor_y, cursor_z = convertScreenCoordsToWorld3D(sx, sy, 700.0)
+								local camera_x, camera_y, camera_z = getActiveCameraCoordinates()
+								local result, colpoint = processLineOfSight(camera_x, camera_y, camera_z, cursor_x, cursor_y, cursor_z, true, true, true, true, true, true, true)
+								if result then
+									local px, py = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+									local px = px + 15
+									local py = py - 15
 
-				local sx, sy = getCursorPos()
-				local w, h = getScreenResolution()
-				if not (sx > 0 and sy > 0 and sx < w and sy < h) then return false end
+									if t_entity_marker[2] then
+										if t_entity_marker[2] ~= colpoint["entity"] then
+											removeBlip(t_entity_marker[1])
+										    t_entity_marker = { false, false }
+										end
+									end
 
-				local cursor_x, cursor_y, cursor_z = convertScreenCoordsToWorld3D(sx, sy, 700.0)
-				local camera_x, camera_y, camera_z = getActiveCameraCoordinates()
-				local result, colpoint = processLineOfSight(camera_x, camera_y, camera_z, cursor_x, cursor_y, cursor_z, true, true, true, true, true, true, true)
-				if not result then return false end
+									if colpoint["entityType"] == 3 then
+										local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+										if distance < 15 then
+											local player_handle = getCharPointerHandle(colpoint["entity"])
+											local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
+											if result then
+												local player_nickname = sampGetPlayerNickname(player_id)
+												renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
 
-				local px, py = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
-				local px = px + 15
-				local py = py - 15
+												if configuration["USERS"]["content"][player_nickname] then
+												    renderFontDrawText(font, string.format("Игрок %s%s{ffffff} (id %s)", configuration["USERS"]["content"][player_nickname]["color"], player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
+												else
+												    renderFontDrawText(font, string.format("Игрок %s (id %s)", player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
+												end
 
-				if t_entity_marker[2] then
-					if t_entity_marker[2] ~= colpoint["entity"] then
-						removeBlip(t_entity_marker[1])
-					    t_entity_marker = { false, false }
+												if not t_entity_marker[1] then 
+												    t_entity_marker = { addBlipForChar(player_handle), colpoint["entity"] }
+												    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+												   	changeBlipColour(t_entity_marker[1], color)
+												end
+
+												if wasKeyPressed(vkeys.VK_LBUTTON) then
+												    create_quick_menu("char", { ["player_id"] = player_id, ["distance"] = distance })
+												end 
+											end
+										end
+									elseif colpoint["entityType"] == 2 then
+										local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+										if distance < 55 then
+											local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
+											local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
+											if result then
+											    local vehicle_model = getCarModel(vehicle_handle)
+											    local normal_model = vehicle_model - 399
+											    local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
+											    local vehicle_name = t_vehicle_name[normal_model]
+
+											   	renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
+											    renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), px, py + 10, 0xFFFFFFFF)
+
+											    if not t_entity_marker[1] then 
+												    t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
+												    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+												     changeBlipColour(t_entity_marker[1], color)
+												end
+
+											    if wasKeyPressed(vkeys.VK_LBUTTON) then
+											        create_quick_menu("vehicle", { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance})
+											    end
+											end
+										end
+									else
+										if t_entity_marker[1] then 
+											removeBlip(t_entity_marker[1]) 
+										   	t_entity_marker = { false, false }
+										end
+									end
+								end
+							end
+						end
 					end
 				end
+			end
 
-				if colpoint["entityType"] == 3 then
-					local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
-					if distance > 15 then return false end
-
-					local player_handle = getCharPointerHandle(colpoint["entity"])
-					local result, player_id = sampGetPlayerIdByCharHandle(player_handle)
-					if result then
-						local player_nickname = sampGetPlayerNickname(player_id)
-						renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
-
-						if configuration["USERS"]["content"][player_nickname] then
-						    renderFontDrawText(font, string.format("Игрок %s%s{ffffff} (id %s)", configuration["USERS"]["content"][player_nickname]["color"], player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
-						else
-						    renderFontDrawText(font, string.format("Игрок %s (id %s)", player_nickname, player_id), px, py + 10, 0xFFFFFFFF)
-						end
-
-						if not t_entity_marker[1] then 
-						    t_entity_marker = { addBlipForChar(player_handle), colpoint["entity"] }
-						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
-						   	changeBlipColour(t_entity_marker[1], color)
-						end
-
-						if wasKeyPressed(vkeys.VK_LBUTTON) then
-						    create_quick_menu("char", { ["player_id"] = player_id, ["distance"] = distance })
-						end 
-
-						return true
-					end
-				elseif colpoint["entityType"] == 2 then
-					local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
-					if distance > 55 then return false end
-
-					local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
-					local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
-					if result then
-					    local vehicle_model = getCarModel(vehicle_handle)
-					    local normal_model = vehicle_model - 399
-					    local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
-					    local vehicle_name = t_vehicle_name[normal_model]
-
-					   	renderFontDrawText(font, string.format("Для взаимодействия нажмите %sLButton{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), px, py, 0xCAFFFFFF)
-					    renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), px, py + 10, 0xFFFFFFFF)
-
-					    if not t_entity_marker[1] then 
-						    t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
-						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
-						     changeBlipColour(t_entity_marker[1], color)
-						end
-
-					    if wasKeyPressed(vkeys.VK_LBUTTON) then
-					        create_quick_menu("vehicle", { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance})
-					    end
-
-					    return true
-					end
-				end
-
-				if t_entity_marker[1] then 
-					removeBlip(t_entity_marker[1]) 
-				   	t_entity_marker = { false, false }
-				end
-			end,
-			["fast_interaction_2"] = function(x, y, z)
+			if assistant_threads["fast_interaction_2"] then
 				if not isKeyDown(VK_RBUTTON) then 
 					if not global_samp_cursor_status then 
 						if t_entity_marker[1] then
@@ -4624,78 +4764,86 @@ function th_helper_assistant()
 							t_entity_marker = { false, false }
 							targeting_vehicle = false
 						end
-					end return false 
-				end
-
-				if t_mimgui_render["quick_menu"][0] then return false end
-				if not configuration["MAIN"]["settings"]["fast_interaction"] then return false end
-				if isCharSittingInAnyCar(playerPed) then return false end
-
-				local player_weapon = getCurrentCharWeapon(playerPed)
-				if player_weapon ~= 0 then return false end
-				
-				local x1, y1, z1 = getActiveCameraCoordinates()
-				local x2, y2, z2 = getActiveCameraPointAt()
-
-				local angle = math.atan2(y2 - y1, x2 - x1)
-				local radius = 5
-				local vector = { ["x"] = x + radius * math.cos(angle), ["y"] = y + radius * math.sin(angle), ["z"] = z + radius * (z2 - z1) }
-
-				local result, colpoint = processLineOfSight(x, y, z, vector["x"], vector["y"], vector["z"], true, true, true, true, true, true, true)
-				if not result then return false end
-
-				if t_entity_marker[2] then
-					if t_entity_marker[2] ~= colpoint["entity"] then 
-					    removeBlip(t_entity_marker[1])
-					    t_entity_marker = { false, false }
-					    targeting_vehicle = false
 					end
-				end 
+				else
+					if not t_mimgui_render["quick_menu"][0] then
+						if configuration["MAIN"]["settings"]["fast_interaction"] then
+							if not isCharSittingInAnyCar(playerPed) then
+								local player_weapon = getCurrentCharWeapon(playerPed)
+								if player_weapon == 0 or player_weapon == 3 then
+									local x1, y1, z1 = getActiveCameraCoordinates()
+									local x2, y2, z2 = getActiveCameraPointAt()
 
-				if colpoint["entityType"] == 2 then 
-					local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
-					local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
-					if result then
-						local vehicle_model = getCarModel(vehicle_handle)
-						local normal_model = vehicle_model - 399
-						local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
-						local vehicle_name = t_vehicle_name[normal_model]
-						local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+									local angle = math.atan2(y2 - y1, x2 - x1)
+									local radius = 5
+									local vector = { ["x"] = x + radius * math.cos(angle), ["y"] = y + radius * math.sin(angle), ["z"] = z + radius * (z2 - z1) }
 
-						targeting_vehicle = { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance }
+									local result, colpoint = processLineOfSight(x, y, z, vector["x"], vector["y"], vector["z"], true, true, false, true, true, true, true)
 
-						local w, h = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+									if result then
+										if t_entity_marker[2] then
+											if t_entity_marker[2] ~= colpoint["entity"] then 
+											    removeBlip(t_entity_marker[1])
+											    t_entity_marker = { false, false }
+											    targeting_vehicle = false
+											end
+										end 
 
-						renderFontDrawText(font, string.format("Для взаимодействия нажмите %sZ{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), w, h, 0xCAFFFFFF)
-						renderFontDrawText(font, string.format("%s %s (id %s, model %s):", vehicle_type, vehicle_name, vehicle_id, vehicle_model), w, h + 10, 0xFFFFFFFF)
+										if colpoint["entityType"] == 2 then 
+											local vehicle_handle = getVehiclePointerHandle(colpoint["entity"])
+											local result, vehicle_id = sampGetVehicleIdByCarHandle(vehicle_handle)
 
-						if not t_entity_marker[1] then 
-						    t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
-						    local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
-						    changeBlipColour(t_entity_marker[1], color) 
-						end
+											if not isCharInAnyPoliceVehicle(playerPed) then 
+												if result then
+													local vehicle_model = getCarModel(vehicle_handle)
+													local normal_model = vehicle_model - 399
+													local vehicle_type = t_vehicle_type_name[t_vehicle_type[normal_model]]
+													local vehicle_name = t_vehicle_name[normal_model]
+													local distance = getDistanceBetweenCoords3d(x, y, z, colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
+													local w, h = convert3DCoordsToScreen(colpoint["pos"][1], colpoint["pos"][2], colpoint["pos"][3])
 
-					   return true
+													if player_weapon == 0 then
+														targeting_vehicle = { ["vehicle_id"] = vehicle_id, ["normal_model"] = normal_model, ["vehicle_handle"] = vehicle_handle, ["distance"] = distance }
+
+														renderFontDrawText(font, string.format("Для взаимодействия нажмите %sZ{ffffff}.", configuration["MAIN"]["settings"]["script_color"]), w, h, 0xCAFFFFFF)
+														renderFontDrawText(font, string.format("%s %s (id %s, model %s)", vehicle_type, vehicle_name, vehicle_id, vehicle_model), w, h + 10, 0xFFFFFFFF)
+													end
+
+													if not t_entity_marker[1] then 
+														t_entity_marker = { addBlipForCar(vehicle_handle), colpoint["entity"] }
+														local color = configuration["MAIN"]["settings"]["timestamp_color"] .. "FF"
+														changeBlipColour(t_entity_marker[1], color) 
+													end
+
+												else
+													if t_entity_marker[1] then
+														removeBlip(t_entity_marker[1]) 
+														t_entity_marker = { false, false }
+														targeting_vehicle = false
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+						end 
 					end
 				end
+			end
 
-				if t_entity_marker[1] then
-					removeBlip(t_entity_marker[1]) 
-					t_entity_marker = { false, false }
-					targeting_vehicle = false
-				end
-			end,
-			["static_time"] = function()
+			if assistant_threads["static_time"] then
 				if not t_static_time[3] then
 					if math.fmod(math.ceil(os.clock()), 60) == 0 then
 						t_static_time = { os.date("%H"), os.date("%M"), false }
 					end
 				end
 				setTimeOfDay(t_static_time[1], t_static_time[2])
-			end,
-			["time_take_ads"] = function()
+			end
+
+			if assistant_threads["time_take_ads"] then
 				if time_take_ads then
-					if os.clock() - time_take_ads > 3 then
+					if os.clock() - time_take_ads > delay_take_ads then
 						if isKeyCheckAvailable() and not t_mimgui_render["editor_ads"][0] then
 							sampSendChat("/edit")
 							time_take_ads = os.clock()
@@ -4703,42 +4851,6 @@ function th_helper_assistant()
 					end
 				end
 			end
- 		}
-
-		if threads[index] then
-			local bool = false
-
-			for key, value in ipairs(assistant_threads) do
-				if value["type"] == index then
-					bool = true
-				end
-			end 
-
-			if not bool then
-				table.insert(assistant_threads, { ["type"] = index, ["callback"] = threads[index] })
-				return true
-			end
-		end
-	end
-
-	function destroy_assistant_thread(__type)
-		for index, value in ipairs(assistant_threads) do
-			if value["type"] == __type then
-				table.remove(assistant_threads, index)
-				break 
-			end
-		end
-	end
-	-- 
-
-	create_assistant_thread("normal_speedometer_update")
-	create_assistant_thread("fast_interaction")
-	create_assistant_thread("static_time") 
-
-	while true do wait(0)
-		if isPlayerPlaying(PLAYER_HANDLE) then 
-			local x, y, z = getCharCoordinates(playerPed)
-			for index, value in ipairs(assistant_threads) do value["callback"](x, y, z) end
 		end
 	end
 end
@@ -6525,7 +6637,7 @@ function command_animations()
 	mimgui_window("animations")
 end
 
-function command_sad()
+function command_sad(parametrs)
 	if time_take_ads then
 		time_take_ads = false 
 		for index, value in ipairs(t_player_text) do
@@ -6535,6 +6647,12 @@ function command_sad()
 		end
 		destroy_assistant_thread("time_take_ads")
 	else 
+		if not tonumber(parametrs) then 
+			chat_error("Введите необходимые параметры для /sad [время в секундах].")
+			return false
+		end
+
+		delay_take_ads = tonumber(parametrs)
 		time_take_ads = os.clock()
 		create_player_text(4)
 		create_assistant_thread("time_take_ads")
@@ -6568,6 +6686,22 @@ function command_helper_admins(parametrs)
 
 		chat(string.format("Администратор %s%s{} был %s.", configuration["MAIN"]["settings"]["script_color"], admin_nickname, (admin_status and "внесён в список" or "вынесен из списка")))
 	else chat_error("Введите необходимые параметры для /helper_admins [id или nickname администратора].") end
+end
+
+function command_unmask(parametrs)
+	if string.match(parametrs, "^(%d+)$") then
+		local player_id = string.match(parametrs, "^(%d+)$")
+		if isPlayerConnected(player_id) then
+			if sampGetDistanceToPlayer(id) < 3 then
+				lua_thread.create(function()
+					local male = configuration["MAIN"]["information"]["sex"] and "female" or "male"
+					local acting = configuration["CUSTOM"]["SYSTEM"][male]["unmask"]["variations"]
+					local acting = acting[math.random(1, #acting)]
+					final_command_handler(acting, { player_id })
+				end)
+			else chat("Данный игрок находится слишком далеко от Вас.") end
+		else chat("Данный игрок не подключён к серверу, проверьте правильность введёного ID.") end
+	else chat_error("Введите необходимые параметры для /unmask [id игрока].") end
 end
 -- !callback
 
@@ -7340,7 +7474,7 @@ function apply_custom_style()
 
 	colors[clr.Text]                 = ImVec4(1.00, 1.00, 1.00, 1.00)
 	colors[clr.TextDisabled]         = ImVec4(0.50, 0.50, 0.50, 1.00)
-	colors[clr.WindowBg]             = ImVec4(0.06, 0.06, 0.06, 0.94)
+	colors[clr.WindowBg]             = ImVec4(0.06, 0.06, 0.06, 0.98)
 	colors[clr.PopupBg]              = ImVec4(0.08, 0.08, 0.08, 0.94)
 	colors[clr.Border]               = ImVec4(0.43, 0.43, 0.50, 0.50)
 	colors[clr.BorderShadow]         = ImVec4(0.00, 0.00, 0.00, 0.00)
@@ -8032,7 +8166,7 @@ function string_pairs(text, size)
 		for index = 1, step do
 			local finish_position = position + size
 			if finish_position > string.len(text) then finish_position = string.len(text) end
-			table.insert(result, string.sub(text, position, finish_position))
+			table.insert(result, string.sub(text, position, finish_position) .. " ")
 			position = finish_position
 		end
 	end
@@ -8710,10 +8844,10 @@ function sampev.onServerMessage(color, text)
 				for nickname in pairs(nicknames) do
 					if players_id[nickname] then
 						if configuration["USERS"]["content"][nickname] then
-							local nickname_with_id = string.format("%s%s{%s}[%s]", configuration["USERS"]["content"][nickname]["color"], nickname, bit.tohex(join_argb(255, r, g, b), 6), players_id[nickname])
+							local nickname_with_id = string.format("%s%s{%s}[%s]", configuration["USERS"]["content"][nickname]["color"], string.gsub(nickname, "_", " "), bit.tohex(join_argb(255, r, g, b), 6), players_id[nickname])
 							text = string.gsub(string.gsub(text, "%[" .. players_id[nickname] .. "%]", ""), nickname, nickname_with_id)
 						else
-							local nickname_with_id = string.format("%s[%s]", nickname, players_id[nickname])
+							local nickname_with_id = string.format("%s[%s]", string.gsub(nickname, "_", " "), players_id[nickname])
 							text = string.gsub(string.gsub(text, "%[" .. players_id[nickname] .. "%]", ""), nickname, nickname_with_id)
 						end
 					end
@@ -8724,7 +8858,7 @@ function sampev.onServerMessage(color, text)
 			else
 				for nickname in pairs(nicknames) do
 					if players_id[nickname] then
-						local nickname_with_id = string.format("%s[%s]", nickname, players_id[nickname])
+						local nickname_with_id = string.format("%s[%s]", string.gsub(nickname, "_", " "), players_id[nickname])
 						text = string.gsub(string.gsub(text, "%[" .. players_id[nickname] .. "%]", ""), nickname, nickname_with_id)
 					end
 				end return {color, text}
@@ -8976,6 +9110,15 @@ function sampev.onShowDialog(dialogId, style, title, button1, button2, text)
 				end
 			end
 		end
+	elseif dialogId == 414 then 
+		if string.match(title, "Детализация по отчёту за сегодня") then 
+			local index = 1
+			for line in string.gmatch(text, "[^\n]+") do 
+				text = string.gsub(text, line, string.format("{ffffff}№%s\t%s", index, line))
+				index = index + 1
+			end
+			return { dialogId, style, title, button1, button2, text }
+		end
 	elseif dialogId == 424 then
 		if ti_improved_dialogues[1]["status"]() then
 			if string.match(title, "Лидеры") then
@@ -9158,9 +9301,9 @@ function sampev.onSendChat(text)
 		local result = string_pairs(text, 86)
 		for index, value in ipairs(result) do
 			if index == 1 then
-				sampSendChat(string.format("%s ..", value))
+				sampSendChat(string.format("%s...", value))
 			else
-				sampSendChat(string.format(".. %s", value))
+				sampSendChat(string.format("... %s", value))
 			end
 		end
 		return false
@@ -9214,9 +9357,9 @@ function sampev.onSendCommand(parametrs)
 						local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 						for index, value in ipairs(result) do
 							if index == 1 then
-								sampSendChat(string.format("/me %s ..", value))
+								sampSendChat(string.format("/me %s...", value))
 							else
-								sampSendChat(string.format("/do .. %s", value))
+								sampSendChat(string.format("/do ... %s", value))
 							end
 						end
 					elseif command == "r" or command == "f" then
@@ -9232,18 +9375,18 @@ function sampev.onSendCommand(parametrs)
 
 							for index, value in ipairs(result) do
 								if index == 1 then
-									sampSendChat(string.format("/%s (( %s .. ))", command, value))
+									sampSendChat(string.format("/%s (( %s... ))", command, value))
 								else
-									sampSendChat(string.format("/%s (( .. %s ))", command, value))
+									sampSendChat(string.format("/%s (( ... %s ))", command, value))
 								end
 							end
 						else
 							local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 							for index, value in ipairs(result) do
 								if index == 1 then
-									sampSendChat(string.format("/%s %s ..", command, value))
+									sampSendChat(string.format("/%s %s...", command, value))
 								else
-									sampSendChat(string.format("/%s .. %s", command, value))
+									sampSendChat(string.format("/%s ... %s", command, value))
 								end
 							end
 						end
@@ -9251,9 +9394,9 @@ function sampev.onSendCommand(parametrs)
 						local result = string_pairs(value, maximum_number_of_characters[command] - 5)
 						for index, value in ipairs(result) do
 							if index == 1 then
-								sampSendChat(string.format("/%s %s ..", command, value))
+								sampSendChat(string.format("/%s %s...", command, value))
 							else
-								sampSendChat(string.format("/%s .. %s", command, value))
+								sampSendChat(string.format("/%s ... %s", command, value))
 							end 
 						end
 					end return false
@@ -9627,6 +9770,9 @@ function checking_relevance_versions_and_files()
 			end
 
 			if configuration["USERS"]["content"] then
+				local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
+				local player_nickname = sampGetPlayerName(player_id)
+
 				for index, value in pairs(configuration["USERS"]["content"]) do
 					for user_serial in string.gmatch(value["serialNumber"], "[^,%s]+") do
 						if user_serial == player_serial_number then
@@ -9635,8 +9781,10 @@ function checking_relevance_versions_and_files()
 								local date = os.date("%d.%m.%Y", value["subscription"])
 								chat(("Вы авторизовались как %s%s{}, профиль верифицирован до {HEX}%s{} ({HEX}%s{} дней)."):format(value["color"], string.nlower(u8:decode(value["rang"])), date, day))
 								player_status = value["rangNumber"]
+								-- send_bot(string.format(u8"(%s) %s авторизовался как верифицированный пользователь (%s уровень).", thisScript().version, player_nickname, value["rangNumber"]))
 							else
 								chat("Верификация вашего профиля истекла, обратитесь к разработчику для её продления.")
+								-- send_bot(string.format(u8"(%s) %s авторизовался как неверифицированный пользователь.", thisScript().version, player_nickname))
 							end
 						end 
 					end
@@ -9644,6 +9792,7 @@ function checking_relevance_versions_and_files()
 
 				if player_status == 0 then
 					chat("Ваш профиль не верифицирован, определённая часть функционала вам недоступна.")
+					-- send_bot(string.format(u8"(%s) %s авторизовался как неверифицированный пользователь.", thisScript().version, player_nickname))
 				end
 			end
 
@@ -9665,6 +9814,11 @@ function speller(text)
 	local url = string.format("https://speller.yandex.net/services/spellservice.json/checkText?text=%s", urlencode(u8(text)))
 	local result = https.request(url)
 	return result and decodeJson(result)
+end 
+
+function send_bot(text)
+	local text = string.format("%s%s", telegram_link, urlencode(text))
+	https.request(text)
 end
 -- !https
 
