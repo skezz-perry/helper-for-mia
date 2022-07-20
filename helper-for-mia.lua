@@ -2099,6 +2099,8 @@ function()
 
 				t_mimgui_render["update_scores"][0] = false
 				current_update_scores = false
+
+				if not need_update_configuration then need_update_configuration = os.clock() end
 				return false
 			end
 			imgui.Hint("##update-scores-send-hint", u8"Нажмите, чтобы отправить оценку.")
