@@ -1,6 +1,6 @@
 script_name("helper-for-mia (v2.0)")
 script_author("Wojciech Kaczynski")
-script_version("0.4.6")
+script_version("0.4.7")
 script_properties("work-in-pause", "forced-reloading-only")
 
 -- require
@@ -20,10 +20,10 @@ local wm = require('lib.windows.message')
 local game_weapons = require "lib.game.weapons"
 lsampev, sampev = pcall(require, "lib.samp.events")
 encoding.default = "CP1251"
-u8 = encoding.UTF8
+u8 = encoding.UTF8 
 imgui.HotKey = mimgui_addons.HotKey
 -- !require
-
+ 
 -- configuration
 local function configuration_file(directory, filename, template)
 	if type(directory) ~= "string" then return false, "CF-F1" end
@@ -417,13 +417,13 @@ local configuration = {
 								{
 									u8"Вы имеете право хранить молчание. ",
 									u8"$wait 1000",
-									u8"Всё, что вы скажете, может и будет использовано против вас в суде. ",
+									u8"Всё, что Вы скажете, может и будет использовано против Вас в суде. ",
 									u8"$wait 1000",
 									u8"Ваш адвокат может присутствовать при допросе. ",
 									u8"$wait 1000",
-									u8"Если вы не можете оплатить услуги адвоката, он будет предоставлен вам государством.",
+									u8"Если Вы не можете оплатить услуги адвоката, он будет предоставлен вам государством.",
 									u8"$wait 1000",
-									u8"Если вы не гражданин, то вы можете связаться с консулом своей страны, прежде чем отвечать на любые вопросы.",
+									u8"Если Вы не гражданин, то Вы можете связаться с консулом своей страны, прежде чем отвечать на любые вопросы.",
 									u8"$wait 1000",
 									u8"Всё ли вам понятно?"
 								}
@@ -738,13 +738,13 @@ local configuration = {
 								{
 									u8"Вы имеете право хранить молчание. ",
 									u8"$wait 1000",
-									u8"Всё, что вы скажете, может и будет использовано против вас в суде. ",
+									u8"Всё, что Вы скажете, может и будет использовано против Вас в суде. ",
 									u8"$wait 1000",
 									u8"Ваш адвокат может присутствовать при допросе. ",
 									u8"$wait 1000",
-									u8"Если вы не можете оплатить услуги адвоката, он будет предоставлен вам государством.",
+									u8"Если Вы не можете оплатить услуги адвоката, он будет предоставлен вам государством.",
 									u8"$wait 1000",
-									u8"Если вы не гражданин, то вы можете связаться с консулом своей страны, прежде чем отвечать на любые вопросы.",
+									u8"Если Вы не гражданин, то Вы можете связаться с консулом своей страны, прежде чем отвечать на любые вопросы.",
 									u8"$wait 1000",
 									u8"Всё ли вам понятно?"
 								}
@@ -1223,7 +1223,19 @@ local ti_low_action = {
 -- global value
 local update_log = {
 	{
-		"version 0.4.6",
+		["date"] = "27.07.2022",
+		u8"Обновление до версии 0.4.7",
+		{
+			u8"Изменён интерфейс новостей об обновлениях (наверное заметно).",
+			u8"Добавлена анимация включения и отключения окон интерфейса.",
+			u8"Очень важно! Теперь окончание в надписи про AFK будет корректным.",
+			u8"Счётчик AFK работает теперь также корректно.",
+			u8"Исправлена ошибка при работе команды /unmask."
+		},
+	},
+	{
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.6",
 		{
 			u8"Добавлена возможность оценки обновлений.",
 			u8"Добавлена RP-отыгровка для снятия маски с игрока (/unmask).",
@@ -1232,41 +1244,44 @@ local update_log = {
 		}
 	},
 	{
-		"patch 0.4.5.2",
+		["date"] = u8"До 27.07.2022",
+		u8"Патч 0.4.5.2",
 		{
 			u8"Исправлены некоторые ошибки и повышена стабильность работы.",
 		}
 	},
 	{
-		"hotfix 0.4.5.1",
+		["date"] = u8"До 27.07.2022",
+		"Hotfix 0.4.5.1",
 		{
 			u8"Исправлены некоторые ошибки."
 		}
 	},
 	{
-		"version 0.4.5",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.5",
 		{
-			u8"Добавлена возможность быстрого взаимодействия (с транспортом) через выделение с помощью ПКМ.",
+			u8"Добавлена возможность быстрого взаимодействия (с транспортом) через выделение (ПКМ).",
 			u8"Добавлена возможность отключения серверной анимации с помощью /anim 0 (79).",
 			u8"Добавлен редактор лимита переноса символов для отдельных чатов -> 5й пункт настроек.",
-			u8"Добавлена возможность отключить быстрое взаимодействие с сущностями (B) -> 2й пункт настроек.",
-			u8"Добавлены маркеры над выделенными сущностями (B) и на отметках на карте (локальное GPS).",
+			u8"Добавлена возможность отключить быстрое взаимодействие с сущностями (B).",
+			u8"Добавлены маркеры над выделенными сущностями (B) и на отметках на карте (GPS).",
 			u8"Изменена чувствительность блокировщика однотипного содержания.",
-			u8"Изменена функциональная часть обработки многих внутренних потоков (производительность плюс).",
-			u8"Возможность просматривать некоторые списки ограничена для неверифицированных пользователей.",
+			u8"Изменена функциональная часть обработки многих внутренних потоков.",
 			u8"Исправлено мерцание при нажатии на пункт в быстром меню."
 		}
 	},
 	{
-		"version 0.4.4",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.4",
 		{
 			u8"Добавлено быстрое взаимодействие с персонажами и транспортом:",
 			u8"Для активации зажмите клавишу B и наведитесь на нужный вам объект взаимодействия.",
-			u8"Если вы хотите добавить новые функции для взаимодействия - напишите какие в ЛС.",
+			u8"Если Вы хотите добавить новые функции для взаимодействия - напишите какие в ЛС.",
 			"",
 			u8"В список онлайна (/helper_online) добавлен раздел администрации.",
 			u8"Администраторы будут автоматически вносится в список в зависимости от их активности.",
-			u8"Также добавлена команда /helper_admins для вноса администраторов в список и их удаления.",
+			u8"Добавлена команда /helper_admins для вноса администраторов в список и их удаления.",
 			"",
 			u8"Добавлена быстрая навигация по диалогам, использующим команды для своей активации:",
 			u8"Использование: /команда X->Y->Z  (например: /gps 1-26, /price 10).",
@@ -1281,7 +1296,8 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.4.3",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.3",
 		{
 			u8"Для отыгровки оглушения добавлены тэги {1} и {2}: id и nickname, соответственно.",
 			u8"Теперь объявления от СМИ идут в общий реестр (/helper_ads).",
@@ -1289,10 +1305,11 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.4.2",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.2",
 		{
 			u8"Добавлена возможность редактировать статьи, используемые в быстром розыске:",
-			u8"Выберите в /uk нужную вам статью, нажмите на неё и выберите подходящее преступление.",
+			u8"Выберите в /uk нужную вам статью, нажмите и выберите подходящее преступление.",
 			"",
 			u8"Добавлен список тэгов и функций для биндера.",
 			u8"Добавлена возможность включать пользовательские команды в быстрое меню.",
@@ -1300,20 +1317,22 @@ local update_log = {
 		}
 	},
 	{
-		"hotfix 0.4.1.1",
+		["date"] = u8"До 27.07.2022",
+		"Hotfix 0.4.1.1",
 		{
 			u8"Исправлены мелкие баги."
 		}
 	},
 	{
-		"version 0.4.1",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.1",
 		{
 			u8"Добавлены дополнительные анимации персонажа (/anims).",
 			"",
 			u8"В интерфейсе патрульного ассистента список тэгов заменён на быстрое меню.",
 			u8"Сообщения из этого меню будут отправляться в выбранный канал рации.",
 			"",
-			u8"Добавлены следующие отыгровки незначительных действий и их настройка в биндере (2 блок):",
+			u8"Добавлены следующие отыгровки незначительных действий и их настройка в биндере:",
 			u8"1. Отыгровка при использовании аптечек, масок;",
 			u8"2. Отыгровка при оглушении игрока дубинкой или тэйзером;",
 			u8"3. Отыгровка при изъятии наркотиков, боеприпасов или оружия.",
@@ -1326,7 +1345,8 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.4.0",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.4.0",
 		{
 			u8"Внесены следующие изменения в патрульного ассистента:",
 			u8"1. Изменён интерфейс настройки маркировок и статуса патруля (/patrol);",
@@ -1343,7 +1363,8 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.3.9",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.9",
 		{
 			u8"Изменена функциональная часть и интерфейсы многих систем скрипта.",
 			u8"Меню покупок в магазинах 24/7 стало удобнее.",
@@ -1352,46 +1373,53 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.3.8",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.8",
 		{
 			u8"Улучшено управление автомобилем при использовании FT."
 		}
 	},
 	{
-		"version 0.3.7",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.7",
 		{
 			u8"Исправлена кастомизация timestamp'a, теперь отображается корректный цвет.",
 			u8"Изменено скругление ImGUI-окон и некоторых элементов."
 		}
 	},
 	{
-		"version 0.3.6",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.6",
 		{
 			u8"Исправлена кастомизация быстрого меню, теперь отображается корректный цвет.",
 			u8"Исправлены незначительные ошибки."
 		}
 	},
 	{
-		"version 0.3.5",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.5",
 		{
 			u8"Исправлены проблемы с общей волной рации.",
 			u8"Исправлена настройка расположения быстрого розыска (теперь она работает)."
 		}
 	},
 	{ 
-		"version 0.3.4",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.4",
 		{
 			u8"Еще очень много очень важных нововведений."
 		}
 	},
 	{
-		"version 0.3.3",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.3",
 		{ 
 			u8"Очень много очень важных нововведений."
 		}
 	},
 	{
-		"version 0.3.2",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.3.2",
 		{
 			u8"Добавлена модификация 'Умный транспорт', которая включает:",
 			u8"1. Удобное открытие транспорта одной клавишей J или командой /lock.",
@@ -1399,11 +1427,12 @@ local update_log = {
 			u8"3. Уведомления о низком уровне топлива."
 		}
 	},
-	{"version 0.3.1", {u8"Исправлены некоторые ошибки."}},
-	{"version 0.2.9", {u8"Добавлены мини-игры змейка (/helper_snake) и сапер (/helper_miner)."}},
-	{"version 0.2.8", {u8"Несколько изменена логика работы быстрого розыска."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.3.1", {u8"Исправлены некоторые ошибки."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.2.9", {u8"Добавлены мини-игры змейка (/helper_snake) и сапер (/helper_miner)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.2.8", {u8"Несколько изменена логика работы быстрого розыска."}},
 	{
-		"version 0.2.6",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.2.6",
 		{
 			u8"Добавлена команда /helper_online для просмотра онлайна организаций.",
 			u8"Внесены следующие изменения в работу команд /sms и /c:",
@@ -1414,7 +1443,8 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.2.5",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.2.5",
 		{
 			u8"Внесены следующие изменения в быстрый розыск:",
 			u8"1. Информирование вынесено в блок отдельных интерфейсов.",
@@ -1426,7 +1456,8 @@ local update_log = {
 		}
 	},
 	{
-		"version 0.2.4",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.2.4",
 		{
 			u8"Добавлены новые причины для объявления в розыск при помощи сочетания клавиш:",
 			u8"1. Вооружённое нападение на любого сотрудника МЮ.",
@@ -1438,25 +1469,28 @@ local update_log = {
 			u8"Теперь весь полученный урон будет логироваться в консоли (~)."
 		}
 	},
-	{"version 0.1.9", {u8"Теперь быстрое меню поддерживает пользовательские команды.", u8"Добавлен раздел модификаций."}},
-	{"version 0.1.8", {u8"Добавлен прерыватель исполнения команд (клавиша X)."}},
-	{"version 0.1.5", {u8"В тестовом режиме добавлено быстрое меню (клавиша Z)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.1.9", {u8"Теперь быстрое меню поддерживает пользовательские команды.", u8"Добавлен раздел модификаций."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.1.8", {u8"Добавлен прерыватель исполнения команд (клавиша X)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.1.5", {u8"В тестовом режиме добавлено быстрое меню (клавиша Z)."}},
 	{
-		"version 0.1.4",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.1.4",
 		{
 			u8"В тестовом режиме добавлена база данных (в блоке 'Панель управления').",
 			u8"Улучшена система определения параметров в биндере."
 		}
 	},
 	{
-		"version 0.1.2",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.1.2",
 		{
 			u8"Добавлена возможность редактировать системные команды и создавать новые вариации.",
 			u8"В настройках добавлена возможность кастомизировать цвет интерфейса и префикса чата."
 		}
 	},
 	{
-		"version 0.1.0",
+		["date"] = u8"До 27.07.2022",
+		u8"Обновление до версии 0.1.0",
 		{
 			u8"Добавлена статистика действий пользователя (/helper_stats).",
 			u8"Добавлен список последних гос.новостей (/goverment_news).",
@@ -1464,13 +1498,13 @@ local update_log = {
 			u8"Добавлены дублирующие NRP-команды (/ncuff и т.д.)"
 		}
 	},
-	{"version 0.0.9", {u8"Добавлен менеджер аккаунтов.", u8"Добавлена возможность проверки правильности написания слов (/speller)."}},
-	{"version 0.0.6", {u8"Окончательно исправлена ошибка при разделении длинных строк."}},
-	{"version 0.0.5", {u8"Добавлен список дешёвых АЗС с построением маршрута до них (/fuel)."}},
-	{"version 0.0.4", {u8"Добавлен CamHack (c + 1).", u8"Улучшен разделитель строк по пробелам, теперь не кикает из игры."}},
-	{"version 0.0.3", {u8"Добавлена возможность печатать при прицеливании (правый ctrl)."}},
-	{"version 0.0.2", {u8"Добавлена система авто-обновлений."}},
-	{"version 0.0.1", {u8"Начало разработки..."}}
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.9", {u8"Добавлен менеджер аккаунтов.", u8"Добавлена возможность проверки правильности написания слов (/speller)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.6", {u8"Окончательно исправлена ошибка при разделении длинных строк."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.5", {u8"Добавлен список дешёвых АЗС с построением маршрута до них (/fuel)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.4", {u8"Добавлен CamHack (c + 1).", u8"Улучшен разделитель строк по пробелам, теперь не кикает из игры."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.3", {u8"Добавлена возможность печатать при прицеливании (правый ctrl)."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.2", {u8"Добавлена система авто-обновлений."}},
+	{["date"] = u8"До 27.07.2022", u8"Обновление до версии 0.0.1", {u8"Начало разработки..."}}
 }
 
 local t_vehicle_name = {"Landstalker", "Bravura", "Buffalo", "Linerunner", "Perrenial", "Sentinel", "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
@@ -1572,20 +1606,61 @@ local delay_take_ads
 local time_take_ads
 local current_update_scores
 
-local t_mimgui_render = {
-	["main_menu"] = new.bool(false),
-	["setting_patrol"] = new.bool(false),
-	["patrol_bar"] = new.bool(false),
-	["quick_menu"] = new.bool(false),
-	["editor_ads"] = new.bool(false),
-	["regulatory_legal_act"] = new.bool(false),
-	["quick_tags"] = new.bool(false),
-	["animations"] = new.bool(false),
-	["editor_quick_suspect"] = new.bool(false),
-	["tags_information"] = new.bool(false),
-	["helper_ads"] = new.bool(false),
-	["update_scores"] = new.bool(false)
+local ui_meta = {
+    __index = function(self, v)
+        if v == "switch" then
+            local switch = function(bool)
+                if self.process and self.process:status() ~= "dead" then
+                    return false -- // Предыдущая анимация ещё не завершилась!
+                end
+                self.timer = os.clock()
+                self.state = not self.state
+
+                self.process = lua_thread.create(function()
+                    local bringFloatTo = function(from, to, start_time, duration)
+                        local timer = os.clock() - start_time
+                        if timer >= 0.00 and timer <= duration then
+                            local count = timer / (duration / 100)
+                            return count * ((to - from) / 100)
+                        end
+                        return (timer > duration) and to or from
+                    end
+
+                    while true do wait(0)
+                        local a = bringFloatTo(0.00, 1.00, self.timer, self.duration)
+                        self.alpha = self.state and a or 1.00 - a
+                        if a == 1.00 then break end
+                    end
+                end)
+                return true -- // Состояние окна изменено!
+            end
+            return switch
+        end
+ 
+        if v == "alpha" then
+            return self.state and 1.00 or 0.00
+        end
+    end
 }
+
+local t_mimgui_render = {
+	["main_menu"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 1 },
+	["setting_patrol"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 1 },
+	["patrol_bar"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 0 },
+	["quick_menu"] = { ["state"] = false, ["duration"] = 0.0, ["close"] = 1 },
+	["editor_ads"] = { ["state"] = false, ["duration"] = 0.0, ["close"] = 0 },
+	["regulatory_legal_act"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 1 },
+	["quick_tags"] = { ["state"] = false, ["duration"] = 0.0, ["close"] = 1 },
+	["animations"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 1 },
+	["editor_quick_suspect"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 2 },
+	["tags_information"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 2 },
+	["helper_ads"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 1 },
+	["update_scores"] = { ["state"] = false, ["duration"] = 0.15, ["close"] = 2 }
+}
+
+for index, value in pairs(t_mimgui_render) do
+	setmetatable(t_mimgui_render[index], ui_meta)
+end
 
 local string_found = {
 	new.char[256](),
@@ -1817,7 +1892,7 @@ local t_tags_and_functions = {
 	{ ["index"] = "{suspect}",     ["description"] = u8"ID первого подорезваемого из быстрого розыска"},
 	{ ["index"] = "{my_id}",       ["description"] = u8"Ваш ID"},
 	{ ["index"] = "{greeting}",    ["description"] = u8"Приветствие в зависимости от времени суток"},
-	{ ["index"] = "{last_number}", ["description"] = u8"Номер игрока, который отправил вам SMS"},
+	{ ["index"] = "{last_number}", ["description"] = u8"Номер игрока, который отправил Вам SMS"},
 	{ ["index"] = "{name}",        ["description"] = u8"Ваше имя и фамилия из настроек"},
 	{ ["index"] = "{rang}",        ["description"] = u8"Ваша должность из настроек"},
 	{ ["index"] = "{fraction}",    ["description"] = u8"Ваше подразделение из настроек"},
@@ -2053,15 +2128,18 @@ imgui.OnInitialize(function()
 end)
 
 
-imgui.OnFrame(function() return t_mimgui_render["update_scores"][0] end,
-function()
+imgui.OnFrame(function() return t_mimgui_render["update_scores"]["alpha"] > 0.0 end,
+function(self)
+	self["HideCursor"] = not t_mimgui_render["update_scores"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["update_scores"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver)
-	imgui.SetNextWindowSize(imgui.ImVec2(350, 200))
-	imgui.Begin("##update_scores", t_mimgui_render["update_scores"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.SetNextWindowSize(imgui.ImVec2(350, 180))
+	imgui.Begin("##update_scores", nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
 
 		imgui.BeginChild("##update-version-info", imgui.ImVec2(90, 31)) -- версия
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
-			imgui.Button(update_log[current_update_scores][1], imgui.ImVec2(80, 21))
+			imgui.Button(u8"Оценка", imgui.ImVec2(80, 21))
+			-- imgui.Button(update_log[current_update_scores][1], imgui.ImVec2(80, 21))
 		imgui.EndChild()
 
 		imgui.SameLine() -- same
@@ -2069,7 +2147,7 @@ function()
 		imgui.BeginChild("##update-scores", imgui.ImVec2(185, 31)) -- оценка
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
 
-			imgui.CustomButton(string.format("%s##update_scores", faicons["ICON_STAR"]), imgui.ImVec2(25, 21))
+			imgui.CustomButton(string.format("%s##update_scores", faicons["ICON_HEART"]), imgui.ImVec2(25, 21))
 			imgui.SameLine(nil, 5) -- same
 
 			imgui.PushItemWidth(145)
@@ -2079,7 +2157,7 @@ function()
 
 		imgui.SameLine() -- same
 
-		imgui.BeginChild("##update-send", imgui.ImVec2(35, 31)) -- отправка
+		imgui.BeginChild("##update-send", imgui.ImVec2(35, 31)) -- отправка 
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
 			if imgui.Button(faicons["ICON_PAPER_PLANE"], imgui.ImVec2(25, 21)) then 
 				configuration["MAIN"]["update_stars"][current_update_scores] = im_update_scores[0]
@@ -2109,16 +2187,19 @@ function()
 		imgui.BeginChild("##update-text", imgui.ImVec2(330, 123)) -- комментарий
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
 			imgui.InputTextMultiline("##update-text-input", im_update_text, 1000, imgui.ImVec2(320, 113))
-			imgui.Hint("##update-scores-text-hint", u8"Здесь вы можете оставить свой комментарий.")
+			imgui.Hint("##update-scores-text-hint", u8"Здесь Вы можете оставить свой комментарий (необязательно).")
 		imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["animations"][0] end, -- анимации
+imgui.OnFrame(function() return t_mimgui_render["animations"]["alpha"] > 0.0 end, -- анимации
 function(player)
+	player["HideCursor"] = not t_mimgui_render["animations"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["animations"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver)
 	imgui.SetNextWindowSize(imgui.ImVec2(350, 450))
-	imgui.Begin("##animations", t_mimgui_render["animations"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
+	imgui.Begin("##animations", nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
 		imgui.SetCursorPos(imgui.ImVec2(10, 10))
 		imgui.BeginChild("##animations-", imgui.ImVec2(330, 430))
 			imgui.SetCursorPosY(5) -- fix Y
@@ -2141,10 +2222,13 @@ function(player)
 		imgui.EndChild()
 
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["quick_menu"][0] end, -- быстрое меню
+imgui.OnFrame(function() return t_mimgui_render["quick_menu"]["alpha"] > 0.0 end, -- быстрое меню
 function(player)
+	player["HideCursor"] = not t_mimgui_render["quick_menu"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["quick_menu"]["alpha"])
 	imgui.SetNextWindowBgAlpha(0.0)
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), nil, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(400, 400))
@@ -2157,22 +2241,28 @@ function(player)
 		end
 
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["quick_tags"][0] end, -- быстрое меню
-function()
+imgui.OnFrame(function() return t_mimgui_render["quick_tags"]["alpha"] > 0.0 end, -- быстрое меню
+function(self)
+	self["HideCursor"] = not t_mimgui_render["quick_tags"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["quick_tags"]["alpha"])
 	imgui.SetNextWindowBgAlpha(0.0)
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), nil, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(400, 400))
 	imgui.Begin("##quicktags", nil, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize)
 
-		if displaying_quick_menu(quick_tags_menu) then t_mimgui_render["quick_tags"][0] = false end
+		if displaying_quick_menu(quick_tags_menu) then t_mimgui_render["quick_tags"]["switch"]() end
 
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["helper_ads"][0] end, -- реестр объявлений
+imgui.OnFrame(function() return t_mimgui_render["helper_ads"]["alpha"] > 0.0 end, -- реестр объявлений
 function(player)
+	player["HideCursor"] = not t_mimgui_render["helper_ads"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["helper_ads"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(460, 277))
 	imgui.Begin(string.format("%s##15", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
@@ -2203,14 +2293,18 @@ function(player)
 	imgui.EndChild()
 
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["editor_ads"][0] end, -- редактор объявлений СМИ
+imgui.OnFrame(function() return t_mimgui_render["editor_ads"]["alpha"] > 0.0 end, -- редактор объявлений СМИ
 function(player)
+	player["HideCursor"] = not t_mimgui_render["editor_ads"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["editor_ads"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(460, 307))
 	imgui.Begin(string.format("%s##7", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		local input = t_quick_ads["ad"]
+		if not input then return end
  
 		imgui.BeginChild("##author_and_ads", imgui.ImVec2(440, 57))
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
@@ -2246,7 +2340,8 @@ function(player)
 
 				if not need_update_configuration then need_update_configuration = os.clock() end
 
-				t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
+				t_mimgui_render["editor_ads"]["switch"]()
+				t_quick_ads = {}
 			end imgui.SameLine()
 
 			if imgui.Button(u8"Отклонить") then
@@ -2259,7 +2354,8 @@ function(player)
 
 				if not need_update_configuration then need_update_configuration = os.clock() end
 
-				t_mimgui_render["editor_ads"][0], t_quick_ads = false, {}
+				t_mimgui_render["editor_ads"]["switch"]()
+				t_quick_ads = {}
 			end imgui.SameLine()
 
 			if imgui.Button(u8"Перенести в поле редактора") then
@@ -2309,18 +2405,21 @@ function(player)
 			end
 		imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["patrol_bar"][0] end, -- патрульный интерфейс (зачем?)
+imgui.OnFrame(function() return t_mimgui_render["patrol_bar"]["alpha"] > 0.0 end, -- патрульный интерфейс (зачем?)
 function(player)
+	player["HideCursor"] = not t_mimgui_render["patrol_bar"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["patrol_bar"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(40, h / 2), imgui.Cond.FirstUseEver)
 	imgui.SetNextWindowSize(imgui.ImVec2(270, 100))
-	imgui.Begin(string.format("%s##6", imgui_script_name), t_mimgui_render["patrol_bar"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
+	imgui.Begin(string.format("%s##6", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
 		player.HideCursor = not global_samp_cursor_status
 
 		imgui.SetCursorPos(imgui.ImVec2(10, 10))
 		imgui.BeginChild("##main", imgui.ImVec2(100, 80))
-			local alltime = math.floor(os.clock() - patrol_status["clock"])
+			local alltime = math.floor(os.clock() - (patrol_status["clock"] or 0))
 			local second = math.fmod(alltime, 60)
 
 			local mark = string.format("%s-%s", patrol_status["mark"], patrol_status["number"])
@@ -2386,13 +2485,16 @@ function(player)
 			imgui.CenterText(string.format("%s %s (%s)", faicons["ICON_COMPASS"], u8(direction), angel))
 		imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["setting_patrol"][0] end, -- настройка патрульного ассистента
-function()
+imgui.OnFrame(function() return t_mimgui_render["setting_patrol"]["alpha"] > 0.0 end, -- настройка патрульного ассистента
+function(self)
+	self["HideCursor"] = not t_mimgui_render["setting_patrol"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["setting_patrol"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(450, 105))
-	imgui.Begin(string.format("%s##5", imgui_script_name), t_mimgui_render["setting_patrol"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.Begin(string.format("%s##5", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		imgui.BeginChild("##mark_and_number", imgui.ImVec2(350, 63))
 			imgui.SetCursorPos(imgui.ImVec2(5, 5))
 			imgui.BeginGroup() -- маркировка юнита
@@ -2445,6 +2547,7 @@ function()
 						command_r("cod 13")
 						mimgui_window("patrol_bar", false)
 						patrol_status = {}
+						return false
 					end
 
 					imgui.Hint("##finish", u8"Нажмите, чтобы завершить патрулирование.")
@@ -2453,6 +2556,7 @@ function()
 					if imgui.Button(faicons["ICON_EYE_SLASH"], imgui.ImVec2(60, 20)) then -- тихое окончание
 						mimgui_window("patrol_bar", false)
 						patrol_status = {}
+						return false
 					end
 
 					imgui.Hint("##silence_finish", u8"Нажмите, чтобы завершить патрулирование без уведомления в рацию.")
@@ -2465,11 +2569,12 @@ function()
 
 					imgui.Hint("##start", u8"Нажмите, чтобы обновить данные о патруле.")
 
-					imgui.SetCursorPos(imgui.ImVec2(5, 35))
+					imgui.SetCursorPos(imgui.ImVec2(5, 35)) 
 					if imgui.Button(faicons["ICON_TIMES_CIRCLE"], imgui.ImVec2(25, 20)) then -- окончание
 						command_r("cod 13")
 						mimgui_window("patrol_bar", false)
 						patrol_status = {}
+						return false
 					end
 
 					imgui.Hint("##finish", u8"Нажмите, чтобы завершить патрулирование.")
@@ -2479,6 +2584,7 @@ function()
 					if imgui.Button(faicons["ICON_EYE_SLASH"], imgui.ImVec2(25, 20)) then -- тихое окончание
 						mimgui_window("patrol_bar", false)
 						patrol_status = {}
+						return false
 					end
 
 					imgui.Hint("##silence_finish", u8"Нажмите, чтобы завершить патрулирование без уведомления в рацию.")
@@ -2513,15 +2619,18 @@ function()
 			end
 		imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["editor_quick_suspect"][0] end,
-function()
-	if not time_quick_suspect then t_mimgui_render["editor_quick_suspect"][0] = false end
+imgui.OnFrame(function() return t_mimgui_render["editor_quick_suspect"]["alpha"] > 0.0 end,
+function(self)
+	if not time_quick_suspect then t_mimgui_render["editor_quick_suspect"]["switch"]() end
 
+	self["HideCursor"] = not t_mimgui_render["editor_quick_suspect"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["editor_quick_suspect"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(300, 208))
-	imgui.Begin(string.format("%s##editor_npa", imgui_script_name), t_mimgui_render["editor_quick_suspect"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.Begin(string.format("%s##editor_npa", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		imgui.BeginChild("##selected_value", imgui.ImVec2(280, 30))
 			imgui.SetCursorPos(imgui.ImVec2(5, 5)) -- fix
 			imgui.CustomButton(string.format(u8"%s, %sй уровень розыска.", time_quick_suspect["reason"], time_quick_suspect["stars"]), imgui.ImVec2(270, 20))
@@ -2548,10 +2657,11 @@ function()
 			end
 			imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["regulatory_legal_act"][0] end, -- нормативно-правовые акты в прайм-тайм
-function()
+imgui.OnFrame(function() return t_mimgui_render["regulatory_legal_act"]["alpha"] > 0.0 end, -- нормативно-правовые акты в прайм-тайм
+function(self)
 	if not viewing_documents then
 		if smart_suspect_id and not isPlayerConnected(smart_suspect_id) then
 			mimgui_window("regulatory_legal_act", false)
@@ -2562,11 +2672,14 @@ function()
 
 	local document = global_current_document
 
+	self["HideCursor"] = not t_mimgui_render["regulatory_legal_act"]["state"]
+
 	-- imgui.CaptureMouseFromApp(true)
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["regulatory_legal_act"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(570, 600))
 
-	imgui.Begin(string.format("%s##npa", imgui_script_name), t_mimgui_render["regulatory_legal_act"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.Begin(string.format("%s##npa", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		imgui.PushItemWidth(545)
 		if imgui.InputTextWithHint("##regulatory_legal_act_i", u8"Введите часть содержания статьи", string_found[1], ffi.sizeof(string_found[1]) - 1, imgui.InputTextFlags.CallbackHistory + imgui.InputTextFlags.CallbackCompletion) then	
 			local pattern = string.nlower(u8:decode(str(string_found[1])))
@@ -2642,13 +2755,16 @@ function()
 			end
 		end
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["tags_information"][0] end,
-function()
+imgui.OnFrame(function() return t_mimgui_render["tags_information"]["alpha"] > 0.0 end,
+function(self)
+	self["HideCursor"] = not t_mimgui_render["tags_information"]["state"]
+	imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["tags_information"]["alpha"])
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(480, 300))
-	imgui.Begin(string.format("%s##12", imgui_script_name), t_mimgui_render["tags_information"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.Begin(string.format("%s##12", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 		imgui.BeginChild("##tags_information", imgui.ImVec2(460, 259))
 			imgui.SetCursorPosY(5) -- fix Y
 			for index, value in ipairs(t_tags_and_functions) do
@@ -2664,15 +2780,19 @@ function()
 			end
 		imgui.EndChild()
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 
-imgui.OnFrame(function() return t_mimgui_render["main_menu"][0] end, -- основное меню
-function()
+imgui.OnFrame(function() return t_mimgui_render["main_menu"]["alpha"] > 0.00 end, -- основное меню
+function(self)
+    self.HideCursor = not t_mimgui_render["main_menu"]["state"]
+    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, t_mimgui_render["main_menu"]["alpha"])
+
 	imgui.SetNextWindowPos(imgui.ImVec2(w / 2, h / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 	imgui.SetNextWindowSize(imgui.ImVec2(650, 435))
-	imgui.Begin(string.format("%s##1", imgui_script_name), t_mimgui_render["main_menu"], imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
+	imgui.Begin(string.format("%s##1", imgui_script_name), nil, imgui.WindowFlags.NoCollapse + imgui.WindowFlags.NoResize)
 
-		imgui.SetCursorPosX(95) -- fix X
+		imgui.SetCursorPosX(96) -- fix X
 
 		imgui.BeginGroup()
 			for index, title in ipairs(main_menu_navigation["list"]) do
@@ -2691,35 +2811,49 @@ function()
 						local value = tostring(value)
 						if maximum_size < imgui.CalcTextSize(value).x then maximum_size = imgui.CalcTextSize(value).x end
 					end
-					update_log[index][3], update_log[index][4] = (maximum_size + 10), (18 * #version[2] + 4)
+					update_log[index][3], update_log[index][4] = (maximum_size + 10), (18 * #version[2] + 83)
 				end
 			end
 
 			for index, value in ipairs(update_log) do
-				if not configuration["MAIN"]["update_stars"][index] then
-					imgui.Center(125) -- fix position
+				imgui.SetCursorPosX(50)
+				imgui.BeginChild(string.format("##update_log-%s", index), imgui.ImVec2(550, value[4]))
 
-					imgui.Button(value[1], imgui.ImVec2(100, 20)) 
-					imgui.SameLine(nil, 5) -- same
+					imgui.SetCursorPos(imgui.ImVec2(10, 10))
 
-					if imgui.Button(string.format("%s##%s", faicons["ICON_STAR"], index), imgui.ImVec2(20, 20)) then
-						current_update_scores = index
-						t_mimgui_render["update_scores"][0] = true
+					imgui.BeginGroup()
+						imgui.Button(faicons["ICON_GITHUB_ALT"], imgui.ImVec2(30, 30))
+					imgui.EndGroup()
+
+					imgui.SameLine() -- same
+
+					imgui.SetCursorPosY(6)
+					imgui.BeginGroup()
+						imgui.Text(value[1])
+						imgui.TextDisabled(value["date"])
+					imgui.EndGroup()
+
+					imgui.SetCursorPosY(50)
+
+					for index, value in ipairs(value[2]) do 
+						imgui.SetCursorPosX(10)
+						imgui.Text(value) 
 					end
-					imgui.Hint(string.format("##stars-hint-%s", index), u8"Нажмите, чтобы оценить это обновление.")
-				else
-					imgui.Center(135) -- fix position
 
-					imgui.Button(value[1], imgui.ImVec2(100, 20)) 
-					imgui.SameLine(nil, 5) -- same
+					imgui.SetCursorPos(imgui.ImVec2(10, value[4] - 30))
 
-					imgui.CustomButton(string.format("%s %s##%s", configuration["MAIN"]["update_stars"][index], faicons["ICON_STAR"], index), imgui.ImVec2(30, 20))
-				end
-
-				imgui.Center(value[3]) -- fix position
-				imgui.BeginChild(string.format("##update_log-%s", index), imgui.ImVec2(value[3], value[4]))
-					imgui.SetCursorPosY(2)
-					for index, value in ipairs(value[2]) do imgui.CenterText(value) end
+					if not configuration["MAIN"]["update_stars"][index] then
+						if imgui.CustomButton(string.format(u8"%s##like-%s", faicons["ICON_HEART_O"], index), imgui.ImVec2(23, 23), 0) then
+							current_update_scores = index
+							t_mimgui_render["update_scores"]["switch"]()
+						end
+						imgui.SameLine(nil, 3)
+						imgui.TextDisabled(u8"Вы ещё не оценили это обновление :с")
+					else
+						imgui.CustomButton(string.format(u8"%s##like-%s", faicons["ICON_HEART"], index), imgui.ImVec2(23, 23), 0)
+						imgui.SameLine(nil, 3)
+						imgui.TextDisabled(string.format(u8"Ваша оценка: %s", configuration["MAIN"]["update_stars"][index]))
+					end
 				imgui.EndChild()
 
 				imgui.NewLine() -- new line
@@ -2749,12 +2883,13 @@ function()
 					imgui.SameLine(205) -- same
 
 					if imgui.CustomButton(u8"Перезагрузить") then
+						is_script_exit = true
 						thisScript():reload()
 					end imgui.SameLine() -- same
 
 					if imgui.CustomButton(u8"Выключить") then
 						is_script_exit = true
-						thisScript():unload()
+						thisScript():unload() 
 					end
 				imgui.EndChild()
 			imgui.EndGroup()
@@ -2838,7 +2973,7 @@ function()
 						imgui.SetCursorPos(imgui.ImVec2(5, 5))
 						if imgui.Button(u8"##местоположение", imgui.ImVec2(285, 5)) then
 							lua_thread.create(function()
-								chat("При помощи курсора {HEX}перенесите интерфейс{} на удобное вам место, а затем {HEX}нажмите ЛКМ для сохранения{}.")
+								chat("При помощи курсора {HEX}перенесите интерфейс{} на удобное Вам место, а затем {HEX}нажмите ЛКМ для сохранения{}.")
 								local result, player_id = sampGetPlayerIdByCharHandle(playerPed)
 								preliminary_check_suspect(player_id, 1, true, false)
 
@@ -3592,6 +3727,7 @@ function()
 		end
 
 	imgui.End()
+	imgui.PopStyleVar()
 end)
 -- !mimgui
 
@@ -3606,17 +3742,12 @@ function main()
 	-- ивенты
 	addEventHandler("onWindowMessage", function(msg, wparam, lparam)
 		if msg == wm.WM_KILLFOCUS then
-			if not pause_start then pause_start = {os.clock(), 1} end
-		elseif msg == wm.WM_SETFOCUS then
-			if pause_start then
-				if (pause_start[2] == 2 and not isPauseMenuActive()) or pause_start[2] == 1 then
-					local difference = os.clock() - pause_start[1]
-					configuration["STATISTICS"]["afk_time"] = configuration["STATISTICS"]["afk_time"] + difference
-					if not need_update_configuration then need_update_configuration = os.clock() end
-					pause_start = nil
-					if difference > 5 then lua_thread.create(function() was_pause = true wait(1500) chat(string.format("Вы находились в AFK {HEX}%d{} секунд(-ы).", difference)) was_pause = false end) end
-				end
+			if not pause_start then 
+				pause_start = { os.clock(), 1 }
+				create_assistant_thread("pause_test")
 			end
+		elseif msg == wm.WM_SETFOCUS then
+			--
 		elseif msg == wm.WM_RBUTTONDOWN then 
 			if isKeyCheckAvailable() then
 				create_assistant_thread("fast_interaction_2")
@@ -3630,28 +3761,34 @@ function main()
 				local was_found_active_menu = false
 				if isKeyCheckAvailable() then
 					for index, value in pairs(t_mimgui_render) do
-						if index ~= "patrol_bar" and index ~= "editor_ads" then
-							if value[0] then
-								was_found_active_menu = true
-								mimgui_window(index, false)
+						if value["close"] ~= 0 then
+							if value["state"] then
+								if not was_found_active_menu or was_found_active_menu < value["close"] then
+									was_found_active_menu = value["close"]
+								end
 							end
 						end
 					end
-				end
+
+					if was_found_active_menu then 
+						for index, value in pairs(t_mimgui_render) do
+							if was_found_active_menu == value["close"] then
+								if value["state"] then
+									t_mimgui_render[index]["switch"]()
+								end
+							end
+						end
+					end
+				end 
 
 				if was_found_active_menu then
 					consumeWindowMessage(true, true)
 				else
-					if not pause_start then
-						if isPauseMenuActive() then
-							pause_start = {os.clock(), 2}
+					if not isPauseMenuActive() then
+						if not pause_start then 
+							pause_start = { os.clock(), 2 }
+							create_assistant_thread("pause_test")
 						end
-					else
-						local difference = os.clock() - pause_start[1]
-						configuration["STATISTICS"]["afk_time"] = configuration["STATISTICS"]["afk_time"] + difference
-						if not need_update_configuration then need_update_configuration = os.clock() end
-						pause_start = nil
-						if difference > 5 then lua_thread.create(function() was_pause = true wait(1500) chat(string.format("Вы находились в AFK {HEX}%d{} секунд(-ы).", difference)) was_pause = false end) end
 					end
 				end
 			elseif wparam == vkeys.VK_B then
@@ -3706,11 +3843,11 @@ function main()
 				end
 			elseif wparam == vkeys.VK_Z then
 				if isKeyCheckAvailable() then
-					if not t_mimgui_render["quick_menu"][0] then
+					if not t_mimgui_render["quick_menu"]["state"] then
 						local was_found_active_menu = false
 						for index, value in pairs(t_mimgui_render) do
 							if index ~= "patrol_bar" then
-								if value[0] then was_found_active_menu = true end
+								if value["state"] then was_found_active_menu = true end
 							end
 						end
 
@@ -3857,6 +3994,10 @@ function main()
 			end
 		end
 	end
+
+	sampRegisterChatCommand("fix_ad", function()
+		sampSendDialogResponse(224, 0, 0, "")
+	end)
 
 	-- потекли потоки
 	lua_thread.create(th_render_player_text)
@@ -4151,7 +4292,7 @@ function th_render_player_text()
 						elseif float >= 0.4 and float < 0.8 then dots = ".."
 						elseif float >= 0.8 and float < 1.0 then dots = "..." end
 
-						if t_mimgui_render["editor_ads"][0] then
+						if t_mimgui_render["editor_ads"]["state"] then
 							renderFontDrawText(font, string.format("ОБЪЯВЛЕНИЕ НАХОДИТСЯ НА ПРОВЕРКЕ%s", dots), w, h, text_color)
 						else
 							renderFontDrawText(font, string.format("ОЖИДАЕМ ПОЯВЛЕНИЯ НОВЫХ ОБЪЯВЛЕНИЙ%s", dots), w, h, text_color)
@@ -4296,6 +4437,7 @@ function th_helper_assistant()
 		["fast_interaction_2"] = false,
 		["static_time"] = false,
 		["time_take_ads"] = false,
+		["pause_test"] = false
 	}
 
 	local quick_open_door = {
@@ -4365,7 +4507,7 @@ function th_helper_assistant()
 	end
 
 	function create_quick_menu(index, input)
-		if t_mimgui_render["quick_menu"][0] then return false end
+		if t_mimgui_render["quick_menu"]["state"] then return false end
 
 		local function test_distance(handle, maximum_distance, entity)
 			local getted = entity and doesVehicleExist(handle) or doesCharExist(handle)
@@ -4374,7 +4516,7 @@ function th_helper_assistant()
 					if value["distance"] then value["color"] = 0xFFA0A0A0 end
 				end
 
-				chat(entity and "Этот транспорт находится слишком далеко от вас." or "Этот игрок находится слишком далеко от вас.")
+				chat(entity and "Этот транспорт находится слишком далеко от Вас." or "Этот игрок находится слишком далеко от Вас.")
 				return false
 			end
 
@@ -4388,7 +4530,7 @@ function th_helper_assistant()
 					end
 				end
 
-				chat(entity and "Этот транспорт находится слишком далеко от вас." or "Этот игрок находится слишком далеко от вас.")
+				chat(entity and "Этот транспорт находится слишком далеко от Вас." or "Этот игрок находится слишком далеко от Вас.")
 				return false
 			end
 
@@ -4605,16 +4747,22 @@ function th_helper_assistant()
 				else
 					for index, value in ipairs(procedures_performed) do
 						if os.time() - value["time"] > 60 then
-							chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], value["nickname"]))
-							local player_id = sampGetPlayerIdByNickname(value["nickname"])
+							if value["is"] then
+								chat(string.format("Вы снова можете провести процедуру {HEX}%s{} для больного {HEX}%s{}.", value["procedure"], string.gsub(value["nickname"], "_", " ")))
+								local player_id = sampGetPlayerIdByNickname(value["nickname"])
 
-							if player_id and isPlayerConnected(player_id) then
-								chat("Если вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
-								t_accept_the_offer = {3, os.clock(), player_id}
+								if player_id and isPlayerConnected(player_id) then
+									chat("Если Вы желаете открыть диалог лечения пациента нажмите {HEX}Y{}.")
+									t_accept_the_offer = {3, os.clock(), player_id}
+								end
+
+								table.remove(procedures_performed, index)
+								if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
+							else
+								chat(string.format("Доктор {HEX}%s{} снова можете провести для Вас процедуру {HEX}%s{}.", string.gsub(value["nickname"], "_", " "), value["procedure"]))
+								table.remove(procedures_performed, index)
+								if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
 							end
-
-							table.remove(procedures_performed, index)
-							if #procedures_performed == 0 then destroy_assistant_thread("procedures_performed") end
 						end
 					end
 				end
@@ -4674,7 +4822,7 @@ function th_helper_assistant()
 						end
 					end
 				else
-					if not t_mimgui_render["quick_menu"][0] then
+					if not t_mimgui_render["quick_menu"]["state"] then
 						if configuration["MAIN"]["settings"]["fast_interaction"] then
 							local sx, sy = getCursorPos()
 							local w, h = getScreenResolution()
@@ -4747,8 +4895,8 @@ function th_helper_assistant()
 										end
 									else
 										if t_entity_marker[1] then 
-											removeBlip(t_entity_marker[1]) 
-										   	t_entity_marker = { false, false }
+										    removeBlip(t_entity_marker[1]) 
+										    t_entity_marker = { false, false }
 										end
 									end
 								end
@@ -4768,7 +4916,7 @@ function th_helper_assistant()
 						end
 					end
 				else
-					if not t_mimgui_render["quick_menu"][0] then
+					if not t_mimgui_render["quick_menu"]["state"] then
 						if configuration["MAIN"]["settings"]["fast_interaction"] then
 							if not isCharSittingInAnyCar(playerPed) then
 								local player_weapon = getCurrentCharWeapon(playerPed)
@@ -4846,11 +4994,33 @@ function th_helper_assistant()
 			if assistant_threads["time_take_ads"] then
 				if time_take_ads then
 					if os.clock() - time_take_ads > delay_take_ads then
-						if isKeyCheckAvailable() and not t_mimgui_render["editor_ads"][0] then
+						if isKeyCheckAvailable() and not t_mimgui_render["editor_ads"]["state"] then
 							sampSendChat("/edit")
 							time_take_ads = os.clock()
 						end
 					end
+				end
+			end
+
+			if assistant_threads["pause_test"] then 
+				if pause_start then
+					if not isPauseMenuActive() then
+						local difference = os.clock() - pause_start[1]
+						configuration["STATISTICS"]["afk_time"] = configuration["STATISTICS"]["afk_time"] + difference
+						if not need_update_configuration then need_update_configuration = os.clock() end
+
+						if difference > 5 then
+							chat(string.format("Вы находились в AFK {HEX}%d{} %s.", difference, get_words_ending("секунда", difference))) 
+						end
+
+						if difference > 0.2 then
+							pause_start = nil
+							destroy_assistant_thread("pause_test")
+						end
+					end
+				else
+					chat("зачем живу")
+					destroy_assistant_thread("pause_test")
 				end
 			end
 		end
@@ -5086,7 +5256,8 @@ end
 
 -- callback
 function command_mh()
-	mimgui_window("main_menu")
+	-- mimgui_window("main_menu")
+	t_mimgui_render["main_menu"]["switch"]()
 end
 
 function command_r(text)
@@ -5268,7 +5439,7 @@ function command_addbl(nickname)
 			if not configuration["MAIN"]["blacklist"][nickname] then
 				configuration["MAIN"]["blacklist"][nickname] = true
 				if not need_update_configuration then need_update_configuration = os.clock() end
-				chat(string.format("{HEX}%s{} был добавлен в чёрный список. Сообщения и звонки более не будут вас беспокоить.", nickname))
+				chat(string.format("{HEX}%s{} был добавлен в чёрный список. Сообщения и звонки более не будут Вас беспокоить.", nickname))
 			else chat("Данный игрок уже находится в чёрном списке.") end
 		else chat("Данный игрок не подключён к серверу. Проверьте правильность введёного ID.") end
 	else chat_error("Введите необходимые параметры для /addbl [никнейм или id игрока].") end
@@ -5302,7 +5473,7 @@ function command_rkinfo()
 		else
 			chat(string.format("Вы можете вернуться в район {ff5c33}%s{} через %s:%s ({HEX}%d{} сек).", delay_between_deaths[1], minute, second, alltime))
 		end
-	else chat(string.format("Время вышло и вы {00cc99}можете{} вернуться в район %s.", delay_between_deaths[1])) end
+	else chat(string.format("Время вышло и Вы {00cc99}можете{} вернуться в район %s.", delay_between_deaths[1])) end
 end
 
 function command_sms(parametrs)
@@ -5427,7 +5598,7 @@ function command_savepass()
 
 		if not need_update_configuration then need_update_configuration = os.clock() end
 		chat("Вы успешено сохранили новые данные в менеджере аккаунтов.")
-	else chat("В данный момент вы не можете обновить данные в менеджере аккаунтов. Ошибка #1.") end
+	else chat("В данный момент Вы не можете обновить данные в менеджере аккаунтов. Ошибка #1.") end
 end
 
 function command_infred()
@@ -6694,7 +6865,7 @@ function command_unmask(parametrs)
 	if string.match(parametrs, "^(%d+)$") then
 		local player_id = string.match(parametrs, "^(%d+)$")
 		if isPlayerConnected(player_id) then
-			if sampGetDistanceToPlayer(id) < 3 then
+			if sampGetDistanceToPlayer(player_id) < 3 then
 				lua_thread.create(function()
 					local male = configuration["MAIN"]["information"]["sex"] and "female" or "male"
 					local acting = configuration["CUSTOM"]["SYSTEM"][male]["unmask"]["variations"]
@@ -7522,10 +7693,19 @@ function imgui.CustomButton(str_id, size, color)
 	if not color then color = imgui.ImVec4(0, 0, 0, 0) end
 
     local clr = imgui.Col
-    imgui.PushStyleColor(clr.Button, color)
-    local result = imgui.Button(str_id, size)
-    imgui.PopStyleColor(1)
-    return result
+    if color == 0 then
+    	imgui.PushStyleColor(clr.Button, imgui.ImVec4(0, 0, 0, 0))
+    	imgui.PushStyleColor(clr.ButtonActive, imgui.ImVec4(0, 0, 0, 0))
+    	imgui.PushStyleColor(clr.ButtonHovered, imgui.ImVec4(0.1, 0.1, 0.1, 1.0))
+	    local result = imgui.Button(str_id, size)
+	    imgui.PopStyleColor(3)
+	    return result
+    else
+	    imgui.PushStyleColor(clr.Button, color)
+	    local result = imgui.Button(str_id, size)
+	    imgui.PopStyleColor(1)
+	    return result
+	end
 end
 
 function imgui.Hint(str_id, hint_text, color, no_center)
@@ -8371,13 +8551,34 @@ end
 
 function mimgui_window(index, bool)
 	if t_mimgui_render[index] then
-		if bool == nil then
-			t_mimgui_render[index][0] = not t_mimgui_render[index][0] -- изменяем статус окна на обратный
-		elseif bool == true then 
-			t_mimgui_render[index][0] = true
-		else
-			t_mimgui_render[index][0] = false
-		end
+		t_mimgui_render[index]["switch"]()
+	end
+end
+
+local t_words_ending = {
+	["секунда"] = {
+		[1] = "секунду", [2] = "секунды", [3] = "секунды", [4] = "секунды", [5] = "секунд", 
+		[6] = "секунд", [7] = "секунд", [8] = "секунд", [9] = "секунд", [10] = "секунд",
+		[11] = "секунд", [12] = "секунд", [13] = "секунд", [14] = "секунд", [15] = "секунд",
+		[16] = "секунд", [17] = "секунд", [18] = "секунд", [19] = "секунд", [20] = "секунд",
+	}
+}
+
+function get_words_ending(word, number)
+	local number = tonumber(number)
+	if not number then return end
+
+	local string_number = string.format("%d", number)
+	local len = string.len(string_number)
+	local one_char = tonumber(string.sub(string_number, len, len))
+	local two_char = tonumber(string.sub(string_number, len - 1, len))
+
+	if t_words_ending[word][two_char] then
+		return t_words_ending[word][two_char]
+	elseif t_words_ending[word][one_char] then
+		return t_words_ending[word][one_char]
+	else
+		return word
 	end
 end
 
@@ -8463,10 +8664,10 @@ function sampev.onServerMessage(color, text)
 			local player_rang, player_nickname, player_id, text = string.match(text, "%[R%] (.+) (%S+)%[(%d+)%]: (.+)")
 			if configuration["MAIN"]["settings"]["new_radio"] then
 				if configuration["USERS"]["content"][player_nickname] then
-					sampAddChatMessage(string.format("[R] %s %s%s{9ACD32}[%s]: %s", player_rang, configuration["USERS"]["content"][player_nickname]["color"], player_nickname, player_id, text), 0x9ACD32)
+					sampAddChatMessage(string.format("[R] %s %s%s{9ACD32}[%s]: %s", player_rang, configuration["USERS"]["content"][player_nickname]["color"], string.gsub(player_nickname, "_", " "), player_id, text), 0x9ACD32)
 					return false
 				else
-					sampAddChatMessage(("[R] %s %s[%s]: %s"):format(player_rang, player_nickname, player_id, text), 0x9ACD32)
+					sampAddChatMessage(("[R] %s %s[%s]: %s"):format(player_rang, string.gsub(player_nickname, "_", " "), player_id, text), 0x9ACD32)
 					return false
 				end
 			end
@@ -8476,10 +8677,10 @@ function sampev.onServerMessage(color, text)
 			local player_rang, player_nickname, player_id, text = string.match(text, "%[F%] (.+) (%S+)%[(%d+)%]: (.+)")
 			if configuration["MAIN"]["settings"]["new_radio"] then
 				if configuration["USERS"]["content"][player_nickname] then
-					sampAddChatMessage(string.format("[F] %s %s%s{20B2AA}[%s]: %s", player_rang, configuration["USERS"]["content"][player_nickname]["color"], player_nickname, player_id, text), 0x20B2AA)
+					sampAddChatMessage(string.format("[F] %s %s%s{20B2AA}[%s]: %s", player_rang, configuration["USERS"]["content"][player_nickname]["color"], string.gsub(player_nickname, "_", " "), player_id, text), 0x20B2AA)
 					return false
 				else
-					sampAddChatMessage(("[F] %s %s[%s]: %s"):format(player_rang, player_nickname, player_id, text), 0x20B2AA)
+					sampAddChatMessage(("[F] %s %s[%s]: %s"):format(player_rang, string.gsub(player_nickname, "_", " "), player_id, text), 0x20B2AA)
 					return false
 				end
 			end
@@ -8549,7 +8750,7 @@ function sampev.onServerMessage(color, text)
 				if patrol_status["status"] then
 					create_offer(1, function() command_r("cod 14") end)
 					lua_thread.create(function() wait(10)
-						chat("Если вы желаете объвить о том, что доставляете подозреваемого в департамент, нажмите {HEX}Y{}.")
+						chat("Если Вы желаете объвить о том, что доставляете подозреваемого в департамент, нажмите {HEX}Y{}.")
 					end)
 				end
 
@@ -8723,15 +8924,6 @@ function sampev.onServerMessage(color, text)
 			configuration["DATABASE"]["player"][player_name]["telephone"] = player_number
 
 			if not need_update_configuration then need_update_configuration = os.clock() end
-		elseif string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5") then -- procedure
-			local nickname, procedure, step = string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5")
-			if not procedures_performed then procedures_performed = {} end
-			table.insert(procedures_performed, { ["nickname"] = nickname, ["procedure"] = string.nlower(procedure), ["step"] = tonumber(step), ["time"] = os.time() })
-			create_assistant_thread("procedures_performed")
-
-			lua_thread.create(function() wait(1)
-				chat(string.format("Был запущен таймер, который уведомит вас о возможности продолжить процедуру."))
-			end)
 		elseif string.match(text, "Вы выбрали заказ. Отправляйтесь к месту загрузки") then -- tk
 			product_delivery_status = 1
 		elseif string.match(text, "(.+) принимает Ваше предложение") then -- accept
@@ -8744,6 +8936,28 @@ function sampev.onServerMessage(color, text)
 						end invite_player_id, invite_rang = nil, nil
 					end)
 				end
+			end
+		elseif string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5") then -- procedure
+			local nickname, procedure, step = string.match(text, "Вы выполнили (%S+) процедуру {80aaff}(%S+){ffcc66} %- (%d+)%/5")
+			if tonumber(step) ~= 5 then
+				if not procedures_performed then procedures_performed = {} end
+				table.insert(procedures_performed, { ["nickname"] = nickname, ["procedure"] = string.nlower(procedure), ["step"] = tonumber(step), ["time"] = os.time(), ["is"] = true })
+				create_assistant_thread("procedures_performed")
+
+				lua_thread.create(function() wait(1)
+					chat(string.format("Был запущен таймер, который уведомит Вас о возможности продолжить процедуру."))
+				end)
+			end
+		elseif string.match(text, "(%S+) выполнил Вам процедуру {80aaff}(%S+){ffcc66} %- (%d)%/5") then 
+			local nickname, procedure, step = string.match(text, "(%S+) выполнил Вам процедуру {80aaff}(%S+){ffcc66} %- (%d)%/5")
+			if tonumber(step) ~= 5 then
+				if not procedures_performed then procedures_performed = {} end
+				table.insert(procedures_performed, { ["nickname"] = nickname, ["procedure"] = string.nlower(procedure), ["step"] = tonumber(step), ["time"] = os.time() })
+				create_assistant_thread("procedures_performed")
+
+				lua_thread.create(function() wait(1)
+					chat(string.format("Был запущен таймер, который уведомит Вас о возможности продолжить процедуру."))
+				end)
 			end
 		end
 	elseif color == 865730559 then
@@ -9027,7 +9241,7 @@ function sampev.onShowDialog(dialogId, style, title, button1, button2, text)
 						local base_ad = u8:decode(configuration["ADS"][index]["received_ad"])
 						if string.gsub(base_ad, "%s+", "") == string.gsub(ad, "%s+", "") then
 							chat(string.format("Найдено схожее объявление #{HEX}%s{} от %s.", index, os.date("%H:%M %d-%m-%Y", configuration["ADS"][index]["finish_of_verification"])))
-							if time_take_ads and is_rp_nickname then
+							if time_take_ads and is_rp_nickname and configuration["ADS"][index]["button"] == 1 then
 								local fix_ad = string.gsub(u8:decode(configuration["ADS"][index]["corrected_ad"]), "TV |", "WMA |")
 								sampSendDialogResponse(dialogId, configuration["ADS"][index]["button"], 1, fix_ad)
 								return false
@@ -9597,7 +9811,7 @@ function sampev.onSendEnterVehicle(vehicle_id, passenger)
 		if result and not passenger then
 			local vehicle = "-596-597-598-599-601-427-528-415-523-490-"
 			if string.match(vehicle, "%-" .. getCarModel(handle) .. "%-") then
-				chat("Если вы желаете активировать патрульного ассистента нажмите {HEX}Y{} или введите {HEX}/patrol{}.")
+				chat("Если Вы желаете активировать патрульного ассистента нажмите {HEX}Y{} или введите {HEX}/patrol{}.")
 				create_offer(2, function() command_patrol() end)
 			end
 		end
@@ -9707,7 +9921,10 @@ function onScriptTerminate(script, bool)
 
 		if t_entity_marker[1] then removeBlip(t_entity_marker[1]) end 
 
-		-- if not is_script_exit then thisScript():reload() end
+		if not is_script_exit and not bool then 
+			chat("Работа помощника была завершена некорректным образом вследствие какой-либо ошибки.")
+			thisScript():reload() 
+		end
 	end
 end
 -- !event
@@ -9793,7 +10010,7 @@ function checking_relevance_versions_and_files()
 				end
 
 				if player_status == 0 then
-					chat("Ваш профиль не верифицирован, определённая часть функционала вам недоступна.")
+					chat("Ваш профиль не верифицирован, определённая часть функционала Вам недоступна.")
 					-- send_bot(string.format(u8"(%s) %s авторизовался как неверифицированный пользователь.", thisScript().version, player_nickname))
 				end
 			end
