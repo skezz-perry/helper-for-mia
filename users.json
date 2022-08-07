@@ -46,5 +46,13 @@
     "serialNumber": "551324144",
     "user_slots_value": 50,
     "subscription": 2627203600
+  },
+  "Dmitriy_Yazov": {
+    "color": "{8B0000}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "",
+    "user_slots_value": 50,
+    "subscription": 2627203600
   }
 }
