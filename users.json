@@ -54,5 +54,13 @@
     "serialNumber": "",
     "user_slots_value": 50,
     "subscription": 2627203600
+  },
+  "Carl_SherShen": {
+    "color": "{8B4513}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "",
+    "user_slots_value": 50,
+    "subscription": 1973183363
   }
 }
