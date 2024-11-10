@@ -62,5 +62,13 @@
     "serialNumber": "",
     "user_slots_value": 50,
     "subscription": 1973183363
+  },
+  "Kontero_Vodila": {
+    "color": "{F08080}",
+    "rang": "Пользователь",
+    "rangNumber": 2,
+    "serialNumber": "950491209",
+    "user_slots_value": 50,
+    "subscription": 1973183363
   }
 }
